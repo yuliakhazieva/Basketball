@@ -90,11 +90,14 @@
     <ImageAsset Include="Assets.xcassets\shelf.imageset\shelf.png" />
     <ImageAsset Include="Assets.xcassets\basketball.imageset\basketball.png" />
     <ImageAsset Include="Assets.xcassets\basketball.imageset\Contents.json" />
+    <ImageAsset Include="Assets.xcassets\basket.imageset\Contents.json" />
+    <ImageAsset Include="Assets.xcassets\basket.imageset\basket.png" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Resources\" />
     <Folder Include="Assets.xcassets\shelf.imageset\" />
     <Folder Include="Assets.xcassets\basketball.imageset\" />
+    <Folder Include="Assets.xcassets\basket.imageset\" />
   </ItemGroup>
   <ItemGroup>
     <BundleResource Include="GameScene.sks" />
