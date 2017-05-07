@@ -94,6 +94,8 @@
     <ImageAsset Include="Assets.xcassets\basket.imageset\basket.png" />
     <ImageAsset Include="Assets.xcassets\sneaker.imageset\Contents.json" />
     <ImageAsset Include="Assets.xcassets\sneaker.imageset\sneaker.png" />
+    <ImageAsset Include="Assets.xcassets\pause.imageset\Contents.json" />
+    <ImageAsset Include="Assets.xcassets\pause.imageset\pause.png" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Resources\" />
@@ -101,6 +103,7 @@
     <Folder Include="Assets.xcassets\basketball.imageset\" />
     <Folder Include="Assets.xcassets\basket.imageset\" />
     <Folder Include="Assets.xcassets\sneaker.imageset\" />
+    <Folder Include="Assets.xcassets\pause.imageset\" />
   </ItemGroup>
   <ItemGroup>
     <BundleResource Include="GameScene.sks" />
