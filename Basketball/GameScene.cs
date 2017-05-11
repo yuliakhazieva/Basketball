@@ -7,47 +7,51 @@ using UIKit;
 
 namespace Basketball
 {
-	enum gameState 
-	{ 
+	enum gameState
+	{
 		welcome, play, pause, tryAgain
 	}
 
-	enum MSButtonNodeState
+	enum SKButtonNodeState
 	{
-	    active, selected, hidden
+		active, selected, hidden
 	}
 
 	public class Shelf : SKSpriteNode
 	{
-		bool isLeft;
+		//public bool isLeft = false;
 
-		public Shelf(bool left, CGPoint point)
-		{
-			isLeft = left;
-			this.Position = point;
-			this.Texture = FromImageNamed("shelf").Texture;
-		}
+		//public Shelf(bool left, CGPoint point)
+		//{
+		//	isLeft = left;
+		//	this.Position = point;
+		//	this.Texture = FromImageNamed("shelf").Texture;
+		//}
+
 	}
 
 	public class SKButtonNode : SKSpriteNode
 	{
-		pulic 
-		MSButtonNodeState state = MSButtonNodeState.active;
+		public delegate void buttDel();
+		public event buttDel buttPressed;
+
+		SKButtonNodeState state = SKButtonNodeState.active;
 		public override void TouchesBegan(NSSet touches, UIEvent evt)
 		{
 			this.Alpha = (System.nfloat)0.5;
 		}
 		public override void TouchesEnded(NSSet touches, UIEvent evt)
 		{
-			
+			this.Alpha = (System.nfloat)1;
+			buttPressed();
 		}
 	}
 
 	public class GameScene : SKScene
 	{
-		SKSpriteNode shelf00;
-		SKSpriteNode shelf01;
-		SKSpriteNode shelf02;
+		Shelf shelf00;
+		Shelf shelf01;
+		Shelf shelf02;
 		SKSpriteNode shelf03;
 		SKSpriteNode shelf10;
 		SKSpriteNode shelf11;
@@ -64,31 +68,33 @@ namespace Basketball
 		SKSpriteNode life1;
 		SKSpriteNode life2;
 		SKSpriteNode life3;
-		SKSpriteNode pauseButton;
+		SKButtonNode pauseButton;
 		SKLabelNode levelLabel;
 		SKSpriteNode pauseFog;
 		SKLabelNode aboutLabel;
 		SKSpriteNode aboutLine;
-		SKSpriteNode aboutButton;
+		SKButtonNode aboutButton;
 		SKLabelNode settingsLabel;
 		SKSpriteNode settingsLine;
-		SKSpriteNode settingsButton;
+		SKButtonNode settingsButton;
 		SKLabelNode resumeLabel;
 		SKSpriteNode resumeLine;
-		SKSpriteNode resumeButton;
+		SKButtonNode resumeButton;
 		SKLabelNode highScoreLabel;
 		SKLabelNode yourScoreLabel;
 		SKLabelNode playLabel;
-		SKSpriteNode playButton;
+		SKButtonNode playButton;
 
 		gameState thisGame;
-		protected GameScene(IntPtr handle) : base(handle){}
+		protected GameScene(IntPtr handle) : base(handle) { }
 
 		public override void DidMoveToView(SKView view)
 		{
+			string s = "" + this.GetChildNode("shelf00").GetType();
+			string m = "" + this.GetChildNode("pauseButton").GetType();
 
-			shelf00 = (SKSpriteNode)this.GetChildNode("shelf00");
-			shelf01 = (SKSpriteNode)this.GetChildNode("shelf01");
+			shelf00 = (Shelf)this.GetChildNode("shelf00");
+			shelf01 = (Shelf)this.GetChildNode("shelf01");
 			shelf02 = (SKSpriteNode)this.GetChildNode("shelf02");
 			shelf03 = (SKSpriteNode)this.GetChildNode("shelf03");
 			shelf10 = (SKSpriteNode)this.GetChildNode("shelf10");
@@ -106,26 +112,48 @@ namespace Basketball
 			life1 = (SKSpriteNode)this.GetChildNode("life1");
 			life2 = (SKSpriteNode)this.GetChildNode("life2");
 			life3 = (SKSpriteNode)this.GetChildNode("life3");
-			pauseButton = (SKSpriteNode)this.GetChildNode("pauseButton");
+			pauseButton = (SKButtonNode)this.GetChildNode("pauseButton");
 
 			levelLabel = (SKLabelNode)this.GetChildNode("levelLabel");
 
 			pauseFog = (SKSpriteNode)this.GetChildNode("pauseFog");
 			aboutLabel = (SKLabelNode)this.GetChildNode("aboutLabel");
 			aboutLine = (SKSpriteNode)this.GetChildNode("aboutLine");
-			aboutButton = (SKSpriteNode)this.GetChildNode("aboutButton");
+			aboutButton = (SKButtonNode)this.GetChildNode("aboutButton");
 			settingsLabel = (SKLabelNode)this.GetChildNode("settingsLabel");
 			settingsLine = (SKSpriteNode)this.GetChildNode("settingsLine");
-			settingsButton = (SKSpriteNode)this.GetChildNode("settingsButton");
+			settingsButton = (SKButtonNode)this.GetChildNode("settingsButton");
 			resumeLabel = (SKLabelNode)this.GetChildNode("resumeLabel");
 			resumeLine = (SKSpriteNode)this.GetChildNode("resumeLine");
-			resumeButton = (SKSpriteNode)this.GetChildNode("resumeButton");
+			resumeButton = (SKButtonNode)this.GetChildNode("resumeButton");
 			highScoreLabel = (SKLabelNode)this.GetChildNode("highScoreLabel");
 			yourScoreLabel = (SKLabelNode)this.GetChildNode("yourScoreLabel");
 
 			playLabel = (SKLabelNode)this.GetChildNode("playLabel");
-			playButton = (SKSpriteNode)this.GetChildNode("playButton");
+			playButton = (SKButtonNode)this.GetChildNode("playButton");
 
+			pauseButton.buttPressed += pausePressed;
+			playButton.buttPressed += playPressed;
+			settingsButton.buttPressed += settingsPressed;
+			aboutButton.buttPressed += aboutPressed;
+
+			//	Shelf[] shelfArray = new Shelf[2] { shelf00, shelf01 };
+
+			//	Random rand = new Random();
+			//	for (int i = 0; i < shelfArray.Length; ++i)
+			//	{
+			//		int temp = rand.Next(0,2);
+			//		if (temp == 0)
+			//		{
+			////			shelfArray[i].isLeft = true;
+			//			shelfArray[i].ZRotation = -10;
+			//		}
+			//		else 
+			//		{
+			//			shelfArray[i].ZRotation = 10;	
+			//		}
+
+			//	}
 
 		}
 
@@ -141,10 +169,10 @@ namespace Basketball
 
 		public override void Update(double currentTime)
 		{
-			
+
 		}
 
-		public void enterPause() 
+		public void pausePressed()
 		{
 			pauseFog.Hidden = false;
 			aboutLabel.Hidden = false;
@@ -158,6 +186,26 @@ namespace Basketball
 			resumeButton.Hidden = false;
 			highScoreLabel.Hidden = false;
 			yourScoreLabel.Hidden = false;
+		}
+
+		public void settingsPressed()
+		{
+
+		}
+
+		public void aboutPressed()
+		{
+
+		}
+
+		public void resumePressed()
+		{
+
+		}
+
+		public void playPressed()
+		{
+
 		}
 	}
 }

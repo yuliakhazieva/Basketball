@@ -107,6 +107,7 @@
   </ItemGroup>
   <ItemGroup>
     <BundleResource Include="GameScene.sks" />
+    <BundleResource Include="Resources\en.lproj\GameScene.sks" />
   </ItemGroup>
   <ItemGroup>
     <InterfaceDefinition Include="LaunchScreen.storyboard" />
