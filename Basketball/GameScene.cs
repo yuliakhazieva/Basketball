@@ -4,6 +4,7 @@ using CoreGraphics;
 using Foundation;
 using SpriteKit;
 using UIKit;
+using System.Timers;
 
 namespace Basketball
 {
@@ -34,6 +35,7 @@ namespace Basketball
 
 	public class SKButtonNode : SKSpriteNode
 	{
+		
 		public delegate void buttDel();
 
 		public event buttDel buttPressed;
@@ -41,7 +43,7 @@ namespace Basketball
 
 		public override void TouchesBegan(NSSet touches, UIEvent evt)
 		{
-			buttTouched();
+		   // buttTouched();
 		}
 		public override void TouchesEnded(NSSet touches, UIEvent evt)
 		{
@@ -51,7 +53,7 @@ namespace Basketball
 
 	public class GameScene : SKScene
 	{
-		
+		Timer timer = new Timer();
 		SKSpriteNode life1;
 		SKSpriteNode life2;
 		SKSpriteNode life3;
@@ -75,33 +77,21 @@ namespace Basketball
 		SKButtonNode basket2;
 		SKButtonNode basket3;
 		SKButtonNode basket4;
-
+		SKLabelNode nameLabel1;
+		SKLabelNode nameLabel2;
+		SKLabelNode rememberLabel1;
+		SKLabelNode rememberLabel2;
 
 		gameState thisGame;
 		protected GameScene(IntPtr handle) : base(handle) { }
 
+
 		public override void DidMoveToView(SKView view)
 		{
+			timer.Interval = 3;
 			this.PhysicsWorld.Gravity = new CGVector(0, -5);
 			Random rand = new Random();
-			Shelf[][] shelfArray = new Shelf[4][];
-			for (int i = 0; i < shelfArray.Length; ++i) 
-			{
-				shelfArray[i] = new Shelf[4];
-				for (int j = 0; j < shelfArray[i].Length; ++j) 
-				{
-					CGPoint shelfPlace = new CGPoint(40 + 80 * j, 400 - 90 * i);
-					int temp = rand.Next(0,2);
-					bool left = temp == 0 ? true : false;
-					if (j == 0) { left = true; } else if (j == 3) { left = false;}
-					shelfArray[i][j] = new Shelf(left, shelfPlace);
-					shelfArray[i][j].PhysicsBody = SKPhysicsBody.CreateRectangularBody(shelfArray[i][j].Size);
-					shelfArray[i][j].PhysicsBody.Dynamic = false;
 
-					shelfArray[i][j].PhysicsBody.Friction = (nfloat)0.1;
-					this.AddChild(shelfArray[i][j]);
-				}
-			}
 
 			life1 = (SKSpriteNode)this.GetChildNode("life1");
 			life2 = (SKSpriteNode)this.GetChildNode("life2");
@@ -136,44 +126,56 @@ namespace Basketball
 
 			playButton = new SKButtonNode();
 			playButton.Texture = SKSpriteNode.FromImageNamed("pause").Texture;
-			playButton.Alpha = 0;
+			//playButton.Alpha = 0;
 			playButton.Position = new CGPoint(160,203);
 			playButton.Size = new CGSize(321,57);
 			this.AddChild(playButton);
+			playButton.ZPosition = 20;
 
 			basket1 = makeABasket(basket1, 40);
 			basket2 = makeABasket(basket1, 120);
 			basket3 = makeABasket(basket1, 200);
 			basket4 = makeABasket(basket1, 280);
-			//SKAction rotateBackAndForth = SKAction.Sequence(SKAction.RotateToAngle((nfloat)6.5, 0.5), SKAction.RotateToAngle((nfloat)6.0, 0.5));
-			//baskets[i].RunAction(SKAction.RepeatActionForever(rotateBackAndForth));
-
-			//	pauseButton = (SKButtonNode)this.GetChildNode("pauseButton");
 		
 			levelLabel = (SKLabelNode)this.GetChildNode("levelLabel");
 
 			pauseFog = (SKSpriteNode)this.GetChildNode("pauseFog");
 			aboutLabel = (SKLabelNode)this.GetChildNode("aboutLabel");
 			aboutLine = (SKSpriteNode)this.GetChildNode("aboutLine");
-		//	aboutButton = (SKButtonNode)this.GetChildNode("aboutButton");
 			settingsLabel = (SKLabelNode)this.GetChildNode("settingsLabel");
 			settingsLine = (SKSpriteNode)this.GetChildNode("settingsLine");
-		//	settingsButton = (SKButtonNode)this.GetChildNode("settingsButton");
 			resumeLabel = (SKLabelNode)this.GetChildNode("resumeLabel");
 			resumeLine = (SKSpriteNode)this.GetChildNode("resumeLine");
-		//	resumeButton = (SKButtonNode)this.GetChildNode("resumeButton");
 			highScoreLabel = (SKLabelNode)this.GetChildNode("highScoreLabel");
 			yourScoreLabel = (SKLabelNode)this.GetChildNode("yourScoreLabel");
-
 			playLabel = (SKLabelNode)this.GetChildNode("playLabel");
-		//	playButton = (SKButtonNode)this.GetChildNode("playButton");
+			nameLabel1 = (SKLabelNode)this.GetChildNode("nameLabel1");
+			nameLabel2 = (SKLabelNode)this.GetChildNode("nameLabel2");
+			rememberLabel1 = (SKLabelNode)this.GetChildNode("rememberLabel1");
+			rememberLabel2 = (SKLabelNode)this.GetChildNode("rememberLabel2");
 
 			pauseButton.buttPressed += pausePressed;
 			playButton.buttPressed += playPressed;
 			settingsButton.buttPressed += settingsPressed;
 			aboutButton.buttPressed += aboutPressed;
 
+			pauseButton.Hidden = true;
+			settingsLine.Hidden = true;
+			resumeLine.Hidden = true;
+			aboutLine.Hidden = true;
+			aboutLabel.Hidden = true;
+			settingsLabel.Hidden = true;
+			resumeLabel.Hidden = true;
+			yourScoreLabel.Hidden = true;
+			highScoreLabel.Hidden = true;
+			levelLabel.Hidden = true;
+			rememberLabel1.Hidden = true;
+			rememberLabel2.Hidden = true;
 
+			rememberLabel1.Alpha = 0;
+			rememberLabel2.Alpha = 0;
+
+			playButton.UserInteractionEnabled = true;
 		}
 		public SKButtonNode makeABasket(SKButtonNode basket, int xCoord)
 		{
@@ -190,22 +192,22 @@ namespace Basketball
 		{
 			foreach (var touch in touches)
 			{
-				var location = ((UITouch)touch).LocationInNode(this);
-				SKNode touchedNode = this.GetNodeAtPoint(location);
-				SKSpriteNode ball = SKSpriteNode.FromImageNamed("basketball");
-				ball.Position = location;
-				ball.PhysicsBody = SKPhysicsBody.CreateCircularBody(5);
-				ball.PhysicsBody.Pinned = false;
-				ball.XScale = (nfloat)0.5;
-				ball.YScale = (nfloat)0.5;
-				ball.PhysicsBody.LinearDamping = 0;
-				AddChild(ball);
+				//var location = ((UITouch)touch).LocationInNode(this);
+				//SKNode touchedNode = this.GetNodeAtPoint(location);
+				//SKSpriteNode ball = SKSpriteNode.FromImageNamed("basketball");
+				//ball.Position = location;
+				//ball.PhysicsBody = SKPhysicsBody.CreateCircularBody(5);
+				//ball.PhysicsBody.Pinned = false;
+				//ball.XScale = (nfloat)0.5;
+				//ball.YScale = (nfloat)0.5;
+				//ball.PhysicsBody.LinearDamping = 0;
+				//AddChild(ball);
 			}
 		}
 
 		public override void Update(double currentTime)
 		{
-
+			
 		}
 
 		public void pausePressed()
@@ -241,7 +243,63 @@ namespace Basketball
 
 		public void playPressed()
 		{
+			playLabel.Hidden = true;
+			rememberLabel1.Hidden = false;
+			rememberLabel1.RunAction(SKAction.FadeAlphaTo(1,1));
+			rememberLabel2.Hidden = false;
+			rememberLabel2.RunAction(SKAction.FadeAlphaTo(1,1));
+			this.RunAction(SKAction.WaitForDuration(1));
 
+			rememberLabel1.RunAction(SKAction.FadeAlphaTo(0,1));
+			rememberLabel2.RunAction(SKAction.FadeAlphaTo(0,1));
+
+			Random rand = new Random();
+			Shelf[][] shelfArray = new Shelf[4][];
+			for (int i = 0; i<shelfArray.Length; ++i) 
+			{
+				shelfArray[i] = new Shelf[4];
+				for (int j = 0; j<shelfArray[i].Length; ++j) 
+				{
+					CGPoint shelfPlace = new CGPoint(40 + 80 * j, 400 - 90 * i);
+					int temp = rand.Next(0, 2);
+					bool left = temp == 0 ? true : false;
+					if (j == 0) { left = true; } else if (j == 3) { left = false;}
+					shelfArray[i][j] = new Shelf(left, shelfPlace);
+					shelfArray[i][j].PhysicsBody = SKPhysicsBody.CreateRectangularBody(shelfArray[i][j].Size);
+					shelfArray[i][j].PhysicsBody.Dynamic = false;
+					shelfArray[i][j].PhysicsBody.Friction = (nfloat)0.1;
+					shelfArray[i][j].Name = "" + i + j;
+					this.AddChild(shelfArray[i][j]);
+				}
+			}
+
+			this.RunAction(SKAction.WaitForDuration(5));
+			for (int i = 0; i < 4; i++)
+			{
+				for (int j = 0; j < 4; j++) 
+				{
+					this.GetChildNode("" + i + j).Hidden = true;
+				}
+			}
+			rememberLabel1.Text = "Куда попадет мяч?";
+			rememberLabel1.Hidden = false;
+
+			int ballCol = rand.Next(0, 4);
+
+			SKAction rotateBackAndForth = SKAction.Sequence(SKAction.RotateToAngle((nfloat)6.5, 0.5), SKAction.RotateToAngle((nfloat)6.0, 0.5));
+			basket1.RunAction(SKAction.RepeatActionForever(rotateBackAndForth));
+			basket2.RunAction(SKAction.RepeatActionForever(rotateBackAndForth));
+			basket3.RunAction(SKAction.RepeatActionForever(rotateBackAndForth));
+			basket4.RunAction(SKAction.RepeatActionForever(rotateBackAndForth));
+
+			SKSpriteNode ball = SKSpriteNode.FromImageNamed("basketball");
+			ball.Position = new CGPoint(40+ballCol*80, 500);
+			ball.PhysicsBody = SKPhysicsBody.CreateCircularBody(5);
+			ball.PhysicsBody.Pinned = true;
+			ball.XScale = (nfloat)0.5;
+			ball.YScale = (nfloat)0.5;
+			ball.PhysicsBody.LinearDamping = 0;
+			AddChild(ball);
 		}
 	}
 }
