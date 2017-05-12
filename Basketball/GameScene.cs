@@ -27,14 +27,7 @@ namespace Basketball
 			this.Position = point;
 			this.Texture = FromImageNamed("shelf").Texture;
 			this.Size = FromImageNamed("shelf").Texture.Size;
-			if (isLeft)
-			{
-				this.ZRotation = -10;
-			}
-			else
-			{
-				
-			}
+			this.ZRotation = isLeft ? -10 : 10; 
 		}
 
 	}
@@ -99,7 +92,7 @@ namespace Basketball
 
 		public override void DidMoveToView(SKView view)
 		{
-
+			this.PhysicsWorld.Gravity = new CGVector(0, -5);
 			Random rand = new Random();
 			Shelf[][] shelfArray = new Shelf[4][];
 			for (int i = 0; i < shelfArray.Length; ++i) 
@@ -110,11 +103,16 @@ namespace Basketball
 					CGPoint shelfPlace = new CGPoint(40 + 80 * j, 400 - 90 * i);
 					int temp = rand.Next(0,2);
 					bool left = temp == 0 ? true : false;
+					if (j == 0) { left = true; } else if (j == 3) { left = false;}
 					shelfArray[i][j] = new Shelf(left, shelfPlace);
+					shelfArray[i][j].PhysicsBody = SKPhysicsBody.CreateRectangularBody(shelfArray[i][j].Size);
+					shelfArray[i][j].PhysicsBody.Dynamic = false;
+
+					shelfArray[i][j].PhysicsBody.Friction = (nfloat)0.1;
 					this.AddChild(shelfArray[i][j]);
 				}
 			}
-			//shelf00 = new Shelf(this.GetChildNode("shelf00"));
+ 			//shelf00 = new Shelf(this.GetChildNode("shelf00"));
 			//shelf01 = (Shelf)this.GetChildNode("shelf01");
 			//shelf02 = (SKSpriteNode)this.GetChildNode("shelf02");
 			//shelf03 = (SKSpriteNode)this.GetChildNode("shelf03");
@@ -187,7 +185,7 @@ namespace Basketball
 			playButton.buttPressed += playPressed;
 			settingsButton.buttPressed += settingsPressed;
 			aboutButton.buttPressed += aboutPressed;
-
+			SKAction rotateBackAndForth = SKAction.Sequence(SKAction.RotateToAngle((nfloat)1.5, 1), SKAction.RotateToAngle((nfloat)3.0, 2));
 
 		}
 
@@ -197,7 +195,14 @@ namespace Basketball
 			{
 				var location = ((UITouch)touch).LocationInNode(this);
 				SKNode touchedNode = this.GetNodeAtPoint(location);
-
+				SKSpriteNode ball = SKSpriteNode.FromImageNamed("basketball");
+				ball.Position = location;
+				ball.PhysicsBody = SKPhysicsBody.CreateCircularBody(5);
+				ball.PhysicsBody.Pinned = false;
+				ball.XScale = (nfloat)0.5;
+				ball.YScale = (nfloat)0.5;
+				ball.PhysicsBody.LinearDamping = 0;
+				AddChild(ball);
 			}
 		}
 
