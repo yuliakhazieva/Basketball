@@ -51,22 +51,7 @@ namespace Basketball
 
 	public class GameScene : SKScene
 	{
-		//Shelf shelf00;
-		//Shelf shelf01;
-		//Shelf shelf02;
-		//Shelf shelf03;
-		//Shelf shelf10;
-		//Shelf shelf11;
-		//Shelf shelf12;
-		//Shelf shelf13;
-		//Shelf shelf20;
-		//Shelf shelf21;
-		//Shelf shelf22;
-		//Shelf shelf23;
-		//Shelf shelf30;
-		//Shelf shelf31;
-		//Shelf shelf32;
-		//Shelf shelf33;
+		
 		SKSpriteNode life1;
 		SKSpriteNode life2;
 		SKSpriteNode life3;
@@ -86,6 +71,11 @@ namespace Basketball
 		SKLabelNode yourScoreLabel;
 		SKLabelNode playLabel;
 		SKButtonNode playButton;
+		SKButtonNode basket1;
+		SKButtonNode basket2;
+		SKButtonNode basket3;
+		SKButtonNode basket4;
+
 
 		gameState thisGame;
 		protected GameScene(IntPtr handle) : base(handle) { }
@@ -112,57 +102,54 @@ namespace Basketball
 					this.AddChild(shelfArray[i][j]);
 				}
 			}
- 			//shelf00 = new Shelf(this.GetChildNode("shelf00"));
-			//shelf01 = (Shelf)this.GetChildNode("shelf01");
-			//shelf02 = (SKSpriteNode)this.GetChildNode("shelf02");
-			//shelf03 = (SKSpriteNode)this.GetChildNode("shelf03");
-			//shelf10 = (SKSpriteNode)this.GetChildNode("shelf10");
-			//shelf11 = (SKSpriteNode)this.GetChildNode("shelf11");
-			//shelf12 = (SKSpriteNode)this.GetChildNode("shelf12");
-			//shelf13 = (SKSpriteNode)this.GetChildNode("shelf13");
-			//shelf20 = (SKSpriteNode)this.GetChildNode("shelf20");
-			//shelf21 = (SKSpriteNode)this.GetChildNode("shelf21");
-			//shelf22 = (SKSpriteNode)this.GetChildNode("shelf22");
-			//shelf23 = (SKSpriteNode)this.GetChildNode("shelf23");
-			//shelf30 = (SKSpriteNode)this.GetChildNode("shelf30");
-			//shelf31 = (SKSpriteNode)this.GetChildNode("shelf31");
-			//shelf32 = (SKSpriteNode)this.GetChildNode("shelf32");
-			//shelf33 = (SKSpriteNode)this.GetChildNode("shelf33");
+
 			life1 = (SKSpriteNode)this.GetChildNode("life1");
 			life2 = (SKSpriteNode)this.GetChildNode("life2");
 			life3 = (SKSpriteNode)this.GetChildNode("life3");
 
 			pauseButton = new SKButtonNode();
-			pauseButton.Texture = SKSpriteNode.FromImageNamed("pause").Texture; 
+			pauseButton.Texture = SKSpriteNode.FromImageNamed("pause").Texture;
+			pauseButton.Size = SKSpriteNode.FromImageNamed("pause").Size;
 			pauseButton.Position = new CGPoint(42, 535);;
+			this.AddChild(pauseButton);
 
 			settingsButton = new SKButtonNode();
 			settingsButton.Texture = SKSpriteNode.FromImageNamed("pause").Texture;
 			settingsButton.Alpha = 0;
 			settingsButton.Position = new CGPoint(160,260);
 			settingsButton.Size = new CGSize(320,58);
+			this.AddChild(settingsButton);
 
 			resumeButton = new SKButtonNode();
 			resumeButton.Texture = SKSpriteNode.FromImageNamed("pause").Texture;
 			resumeButton.Alpha = 0;
 			resumeButton.Position = new CGPoint(160,370);
 			resumeButton.Size = new CGSize(320,57);
+            this.AddChild(resumeButton);
 
 			aboutButton = new SKButtonNode();
 			aboutButton.Texture = SKSpriteNode.FromImageNamed("pause").Texture;
 			aboutButton.Alpha = 0;
 			aboutButton.Position = new CGPoint(160,20);
 			aboutButton.Size = new CGSize(323,46);
+			this.AddChild(aboutButton);
 
 			playButton = new SKButtonNode();
 			playButton.Texture = SKSpriteNode.FromImageNamed("pause").Texture;
 			playButton.Alpha = 0;
 			playButton.Position = new CGPoint(160,203);
 			playButton.Size = new CGSize(321,57);
+			this.AddChild(playButton);
 
+			basket1 = makeABasket(basket1, 40);
+			basket2 = makeABasket(basket1, 120);
+			basket3 = makeABasket(basket1, 200);
+			basket4 = makeABasket(basket1, 280);
+			//SKAction rotateBackAndForth = SKAction.Sequence(SKAction.RotateToAngle((nfloat)6.5, 0.5), SKAction.RotateToAngle((nfloat)6.0, 0.5));
+			//baskets[i].RunAction(SKAction.RepeatActionForever(rotateBackAndForth));
 
-		//	pauseButton = (SKButtonNode)this.GetChildNode("pauseButton");
-
+			//	pauseButton = (SKButtonNode)this.GetChildNode("pauseButton");
+		
 			levelLabel = (SKLabelNode)this.GetChildNode("levelLabel");
 
 			pauseFog = (SKSpriteNode)this.GetChildNode("pauseFog");
@@ -185,10 +172,20 @@ namespace Basketball
 			playButton.buttPressed += playPressed;
 			settingsButton.buttPressed += settingsPressed;
 			aboutButton.buttPressed += aboutPressed;
-			SKAction rotateBackAndForth = SKAction.Sequence(SKAction.RotateToAngle((nfloat)1.5, 1), SKAction.RotateToAngle((nfloat)3.0, 2));
+
 
 		}
-
+		public SKButtonNode makeABasket(SKButtonNode basket, int xCoord)
+		{
+			basket = new SKButtonNode();
+			basket.Texture = SKTexture.FromImageNamed("basket");
+			basket.Size = SKSpriteNode.FromImageNamed("basket").Size;
+			basket.XScale = (nfloat)0.3;
+			basket.YScale = (nfloat)0.3;
+			basket.Position = new CGPoint(xCoord, 39);
+			this.AddChild(basket);
+			return basket;
+		}
 		public override void TouchesBegan(NSSet touches, UIEvent evt)
 		{
 			foreach (var touch in touches)
