@@ -126,7 +126,7 @@ namespace Basketball
 
 			playButton = new SKButtonNode();
 			playButton.Texture = SKSpriteNode.FromImageNamed("pause").Texture;
-			//playButton.Alpha = 0;
+			playButton.Alpha = 0;
 			playButton.Position = new CGPoint(160,203);
 			playButton.Size = new CGSize(321,57);
 			this.AddChild(playButton);
@@ -176,6 +176,10 @@ namespace Basketball
 			rememberLabel2.Alpha = 0;
 
 			playButton.UserInteractionEnabled = true;
+			pauseButton.UserInteractionEnabled = true;
+			resumeButton.UserInteractionEnabled = true;
+			aboutButton.UserInteractionEnabled = true;
+			settingsButton.UserInteractionEnabled = true;
 		}
 		public SKButtonNode makeABasket(SKButtonNode basket, int xCoord)
 		{
