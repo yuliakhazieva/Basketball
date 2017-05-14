@@ -167,6 +167,8 @@ namespace Basketball
 						shelfArray[i][j].PhysicsBody = SKPhysicsBody.CreateRectangularBody(shelfArray[i][j].Size);
 						shelfArray[i][j].PhysicsBody.Dynamic = false;
 						shelfArray[i][j].PhysicsBody.Friction = (nfloat)0.1;
+						shelfArray[i][j].PhysicsBody.ContactTestBitMask = 0;
+						shelfArray[i][j].PhysicsBody.CategoryBitMask = 1000;
 						shelfArray[i][j].Name = "" + i + j;
 						this.AddChild(shelfArray[i][j]);
 					}
@@ -200,7 +202,9 @@ namespace Basketball
 
 				ball.Position = new CGPoint(40 + ballCol * 80, 500);
 				ball.PhysicsBody = SKPhysicsBody.CreateCircularBody(5);
-				ball.PhysicsBody.ContactTestBitMask = 1;
+				ball.PhysicsBody.ContactTestBitMask = 0;
+				ball.PhysicsBody.CollisionBitMask = 100;
+				ball.PhysicsBody.CategoryBitMask = 1;
 				ball.PhysicsBody.Pinned = true;
 				ball.XScale = (nfloat)0.5;
 				ball.YScale = (nfloat)0.5;
@@ -325,6 +329,10 @@ namespace Basketball
 			basket3.PhysicsBody.ContactTestBitMask = 1;
 			basket4.PhysicsBody.ContactTestBitMask = 1;
 
+			basket1.PhysicsBody.CategoryBitMask = 10;
+			basket2.PhysicsBody.CategoryBitMask = 10;
+			basket3.PhysicsBody.CategoryBitMask = 10;
+			basket4.PhysicsBody.CategoryBitMask = 10;
 
 
 			playButton.Alpha = (float)0.000001;
