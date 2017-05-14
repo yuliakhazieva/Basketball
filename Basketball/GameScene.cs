@@ -144,7 +144,7 @@ namespace Basketball
 					}
 				}
 
-				ball.RunAction(SKAction.Sequence(SKAction.ScaleTo((nfloat)2,0.5), SKAction.RotateByAngle(5, 1), SKAction.RemoveFromParent()));
+				ball.RunAction(SKAction.Sequence(SKAction.RotateByAngle(10, 1), SKAction.RemoveFromParent()));
 			};
 
 
@@ -168,7 +168,8 @@ namespace Basketball
 						shelfArray[i][j].PhysicsBody.Dynamic = false;
 						shelfArray[i][j].PhysicsBody.Friction = (nfloat)0.1;
 						shelfArray[i][j].PhysicsBody.ContactTestBitMask = 0;
-						shelfArray[i][j].PhysicsBody.CategoryBitMask = 1000;
+						shelfArray[i][j].PhysicsBody.CategoryBitMask = 8;
+
 						shelfArray[i][j].Name = "" + i + j;
 						this.AddChild(shelfArray[i][j]);
 					}
@@ -202,8 +203,8 @@ namespace Basketball
 
 				ball.Position = new CGPoint(40 + ballCol * 80, 500);
 				ball.PhysicsBody = SKPhysicsBody.CreateCircularBody(5);
-				ball.PhysicsBody.ContactTestBitMask = 0;
-				ball.PhysicsBody.CollisionBitMask = 100;
+				ball.PhysicsBody.ContactTestBitMask = 2;
+				ball.PhysicsBody.CollisionBitMask = 12;
 				ball.PhysicsBody.CategoryBitMask = 1;
 				ball.PhysicsBody.Pinned = true;
 				ball.XScale = (nfloat)0.5;
@@ -274,20 +275,22 @@ namespace Basketball
 			rememberLabel2 = (SKLabelNode)this.GetChildNode("rememberLabel2");
 			ball = SKSpriteNode.FromImageNamed("basketball");
 			ball.Name = "ball";
-			basket1.PhysicsBody = SKPhysicsBody.CreateRectangularBody(new CGSize(48,48), basket1.Position);
-			basket2.PhysicsBody = SKPhysicsBody.CreateRectangularBody(new CGSize(48,48), basket2.Position);
-			basket3.PhysicsBody = SKPhysicsBody.CreateRectangularBody(new CGSize(48,48), basket3.Position);
-			basket4.PhysicsBody = SKPhysicsBody.CreateRectangularBody(new CGSize(48,48), basket4.Position);
+			basket1.PhysicsBody = SKPhysicsBody.Create(basket1.Texture, basket1.Size);
+			basket2.PhysicsBody = SKPhysicsBody.Create(basket1.Texture, basket1.Size);
+			basket3.PhysicsBody = SKPhysicsBody.Create(basket1.Texture, basket1.Size);
+			basket4.PhysicsBody = SKPhysicsBody.Create(basket1.Texture, basket1.Size);
+
+
 
 			basket1.PhysicsBody.Dynamic = false;
 			basket2.PhysicsBody.Dynamic = false;
 			basket3.PhysicsBody.Dynamic = false;
 			basket4.PhysicsBody.Dynamic = false;
 
-			basket1.PhysicsBody.CollisionBitMask = 0;
-			basket2.PhysicsBody.CollisionBitMask = 0;
-			basket3.PhysicsBody.CollisionBitMask = 0;
-			basket4.PhysicsBody.CollisionBitMask = 0;
+			basket1.PhysicsBody.CollisionBitMask = 00000000;
+			basket2.PhysicsBody.CollisionBitMask = 00000000;
+			basket3.PhysicsBody.CollisionBitMask = 00000000;
+			basket4.PhysicsBody.CollisionBitMask = 00000000;
 
 			pauseButton.buttPressed += pausePressed;
 			playButton.buttPressed += playPressed;
@@ -324,15 +327,15 @@ namespace Basketball
 			basket3.UserInteractionEnabled = true;
 			basket4.UserInteractionEnabled = true;
 
-			basket1.PhysicsBody.ContactTestBitMask = 1;
-			basket2.PhysicsBody.ContactTestBitMask = 1;
-			basket3.PhysicsBody.ContactTestBitMask = 1;
-			basket4.PhysicsBody.ContactTestBitMask = 1;
+			basket1.PhysicsBody.ContactTestBitMask = 00000001;
+			basket2.PhysicsBody.ContactTestBitMask = 00000001;
+			basket3.PhysicsBody.ContactTestBitMask = 00000001;
+			basket4.PhysicsBody.ContactTestBitMask = 00000001;
 
-			basket1.PhysicsBody.CategoryBitMask = 10;
-			basket2.PhysicsBody.CategoryBitMask = 10;
-			basket3.PhysicsBody.CategoryBitMask = 10;
-			basket4.PhysicsBody.CategoryBitMask = 10;
+			basket1.PhysicsBody.CategoryBitMask = 2;
+			basket2.PhysicsBody.CategoryBitMask = 2;
+			basket3.PhysicsBody.CategoryBitMask = 2;
+			basket4.PhysicsBody.CategoryBitMask = 2;
 
 
 			playButton.Alpha = (float)0.000001;
@@ -437,10 +440,17 @@ namespace Basketball
 
 		public void fall()
 		{
+
 			basket1.RemoveAllActions();
 			basket2.RemoveAllActions();
 			basket3.RemoveAllActions();
 			basket4.RemoveAllActions();
+
+			basket1.ZRotation = 0;
+			basket2.ZRotation = 0;
+			basket3.ZRotation = 0;
+			basket4.ZRotation = 0;
+
 			for (int i = 0; i < 4; i++)
 			{
 				for (int j = 0; j < 4; j++)
