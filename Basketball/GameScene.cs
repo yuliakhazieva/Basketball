@@ -53,7 +53,8 @@ namespace Basketball
 
 	public class GameScene : SKScene
 	{
-		Timer timer = new Timer();
+		Timer timer1 = new Timer();
+		Timer timer2 = new Timer();
 		SKSpriteNode life1;
 		SKSpriteNode life2;
 		SKSpriteNode life3;
@@ -88,11 +89,71 @@ namespace Basketball
 
 		public override void DidMoveToView(SKView view)
 		{
-			timer.Interval = 3;
+			
+			timer1.Interval = 1000;
+			timer2.Interval = 10000;
 			this.PhysicsWorld.Gravity = new CGVector(0, -5);
 			Random rand = new Random();
 
+			timer1.Elapsed += (object sender, ElapsedEventArgs e) => 
+			{
 
+					rememberLabel1.RunAction(SKAction.FadeAlphaTo(0, 1));
+					rememberLabel2.RunAction(SKAction.FadeAlphaTo(0, 1));
+					Shelf[][] shelfArray = new Shelf[4][];
+					for (int i = 0; i < shelfArray.Length; ++i)
+					{
+						shelfArray[i] = new Shelf[4];
+						for (int j = 0; j < shelfArray[i].Length; ++j)
+						{
+							CGPoint shelfPlace = new CGPoint(40 + 80 * j, 400 - 90 * i);
+							int temp = rand.Next(0, 2);
+							bool left = temp == 0 ? true : false;
+							if (j == 0) { left = true; } else if (j == 3) { left = false; }
+							shelfArray[i][j] = new Shelf(left, shelfPlace);
+							shelfArray[i][j].PhysicsBody = SKPhysicsBody.CreateRectangularBody(shelfArray[i][j].Size);
+							shelfArray[i][j].PhysicsBody.Dynamic = false;
+							shelfArray[i][j].PhysicsBody.Friction = (nfloat)0.1;
+							shelfArray[i][j].Name = "" + i + j;
+							this.AddChild(shelfArray[i][j]);
+						}
+
+				}
+				timer1.Stop();
+				timer1.Close();
+				timer2.Start();
+			};
+			timer2.Elapsed += (object sender, ElapsedEventArgs e) => 
+			{
+				timer2.Stop();
+				timer2.Close();
+					for (int i = 0; i< 4; i++)
+					{
+						for (int j = 0; j< 4; j++) 
+						{
+                       		this.GetChildNode("" + i + j).RunAction(SKAction.FadeAlphaTo(0, 1));
+						}
+					}
+					rememberLabel1.Text = "Куда попадет мяч?";
+					rememberLabel1.RunAction(SKAction.FadeAlphaTo(1, 1));
+					int ballCol = rand.Next(0, 4);
+
+					SKAction rotateBackAndForth = SKAction.Sequence(SKAction.RotateToAngle((nfloat)6.0, 0.5), SKAction.RotateToAngle((nfloat)6.5, 0.5));
+					basket1.RunAction(SKAction.RepeatActionForever(rotateBackAndForth));
+					basket2.RunAction(SKAction.RepeatActionForever(rotateBackAndForth));
+					basket3.RunAction(SKAction.RepeatActionForever(rotateBackAndForth));
+					basket4.RunAction(SKAction.RepeatActionForever(rotateBackAndForth));
+
+					SKSpriteNode ball = SKSpriteNode.FromImageNamed("basketball");
+					ball.Position = new CGPoint(40+ballCol*80, 500);
+					ball.PhysicsBody = SKPhysicsBody.CreateCircularBody(5);
+					ball.PhysicsBody.Pinned = true;
+					ball.XScale = (nfloat)0.5;
+					ball.YScale = (nfloat)0.5;
+					ball.PhysicsBody.LinearDamping = 0;
+					AddChild(ball);
+
+			};
 			life1 = (SKSpriteNode)this.GetChildNode("life1");
 			life2 = (SKSpriteNode)this.GetChildNode("life2");
 			life3 = (SKSpriteNode)this.GetChildNode("life3");
@@ -180,7 +241,11 @@ namespace Basketball
 			resumeButton.UserInteractionEnabled = true;
 			aboutButton.UserInteractionEnabled = true;
 			settingsButton.UserInteractionEnabled = true;
+
+			playButton.Alpha = (float)0.000001;
 		}
+
+
 		public SKButtonNode makeABasket(SKButtonNode basket, int xCoord)
 		{
 			basket = new SKButtonNode();
@@ -247,63 +312,18 @@ namespace Basketball
 
 		public void playPressed()
 		{
+			pauseFog.Hidden = true;
+			nameLabel1.Hidden = true;
+			nameLabel2.Hidden = true;
 			playLabel.Hidden = true;
 			rememberLabel1.Hidden = false;
+
 			rememberLabel1.RunAction(SKAction.FadeAlphaTo(1,1));
 			rememberLabel2.Hidden = false;
 			rememberLabel2.RunAction(SKAction.FadeAlphaTo(1,1));
-			this.RunAction(SKAction.WaitForDuration(1));
 
-			rememberLabel1.RunAction(SKAction.FadeAlphaTo(0,1));
-			rememberLabel2.RunAction(SKAction.FadeAlphaTo(0,1));
+			timer1.Start();
 
-			Random rand = new Random();
-			Shelf[][] shelfArray = new Shelf[4][];
-			for (int i = 0; i<shelfArray.Length; ++i) 
-			{
-				shelfArray[i] = new Shelf[4];
-				for (int j = 0; j<shelfArray[i].Length; ++j) 
-				{
-					CGPoint shelfPlace = new CGPoint(40 + 80 * j, 400 - 90 * i);
-					int temp = rand.Next(0, 2);
-					bool left = temp == 0 ? true : false;
-					if (j == 0) { left = true; } else if (j == 3) { left = false;}
-					shelfArray[i][j] = new Shelf(left, shelfPlace);
-					shelfArray[i][j].PhysicsBody = SKPhysicsBody.CreateRectangularBody(shelfArray[i][j].Size);
-					shelfArray[i][j].PhysicsBody.Dynamic = false;
-					shelfArray[i][j].PhysicsBody.Friction = (nfloat)0.1;
-					shelfArray[i][j].Name = "" + i + j;
-					this.AddChild(shelfArray[i][j]);
-				}
-			}
-
-			this.RunAction(SKAction.WaitForDuration(5));
-			for (int i = 0; i < 4; i++)
-			{
-				for (int j = 0; j < 4; j++) 
-				{
-					this.GetChildNode("" + i + j).Hidden = true;
-				}
-			}
-			rememberLabel1.Text = "Куда попадет мяч?";
-			rememberLabel1.Hidden = false;
-
-			int ballCol = rand.Next(0, 4);
-
-			SKAction rotateBackAndForth = SKAction.Sequence(SKAction.RotateToAngle((nfloat)6.5, 0.5), SKAction.RotateToAngle((nfloat)6.0, 0.5));
-			basket1.RunAction(SKAction.RepeatActionForever(rotateBackAndForth));
-			basket2.RunAction(SKAction.RepeatActionForever(rotateBackAndForth));
-			basket3.RunAction(SKAction.RepeatActionForever(rotateBackAndForth));
-			basket4.RunAction(SKAction.RepeatActionForever(rotateBackAndForth));
-
-			SKSpriteNode ball = SKSpriteNode.FromImageNamed("basketball");
-			ball.Position = new CGPoint(40+ballCol*80, 500);
-			ball.PhysicsBody = SKPhysicsBody.CreateCircularBody(5);
-			ball.PhysicsBody.Pinned = true;
-			ball.XScale = (nfloat)0.5;
-			ball.YScale = (nfloat)0.5;
-			ball.PhysicsBody.LinearDamping = 0;
-			AddChild(ball);
 		}
 	}
 }
