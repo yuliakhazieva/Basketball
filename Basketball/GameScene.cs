@@ -85,6 +85,9 @@ namespace Basketball
 		SKSpriteNode ball;
 		int userChoice;
 		int rightChoice;
+		int lives = 3;
+		int level = 1;
+		int highScore = 1;
 
 		gameState thisGame;
 		protected GameScene(IntPtr handle) : base(handle) { }
@@ -96,7 +99,8 @@ namespace Basketball
 			timer2.Interval = 10000;
 			this.PhysicsWorld.Gravity = new CGVector(0, -5);
 			Random rand = new Random();
-			//this.PhysicsWorld.ContactDelegate = this;
+
+
 			this.PhysicsWorld.DidBeginContact += (object sender, EventArgs e) => 
 			{
 				var contact = sender as SKPhysicsContact;
@@ -144,36 +148,92 @@ namespace Basketball
 					}
 				}
 
-				ball.RunAction(SKAction.Sequence(SKAction.RotateByAngle(10, 1), SKAction.RemoveFromParent()));
+				//ball.RunAction(SKAction.Sequence(SKAction.RotateByAngle(10, 1), SKAction.RemoveFromParent()));
+				if (rightChoice == userChoice)
+				{
+					level++;
+					if (level > highScore) { highScore = level;}
+					rememberLabel1.Text = "Верно \ud83c\udf1f";
+
+				}
+				else 
+				{
+					rememberLabel1.Text = "Неверно";
+					lives--;
+					switch (lives) 
+					{
+						case 2:
+							life1.Hidden = true;
+							break;
+						case 1:
+							life2.Hidden = true;
+							break;
+						case 0:
+							life3.Hidden = true;
+							gameOver();
+							break;
+					}
+				}
+				rememberLabel1.RunAction(SKAction.Sequence(SKAction.FadeAlphaTo(1, 2), SKAction.FadeAlphaTo(0,1)));
+				for (int i = 0; i < 4; i++)
+				{
+					for (int j = 0; j < 4; j++)
+					{
+						this.GetChildNode("" + i + j).RunAction(SKAction.FadeAlphaTo(0, 0.5));
+					}
+				}
+
+				rememberLabel1.Text = "У вас есть 5 секунд";
+				playPressed();
 			};
 
 
 			timer1.Elapsed += (object sender, ElapsedEventArgs e) =>
 			{
 
+				levelLabel.RunAction(SKAction.FadeAlphaTo(0, 1));
 				rememberLabel1.RunAction(SKAction.FadeAlphaTo(0, 1));
 				rememberLabel2.RunAction(SKAction.FadeAlphaTo(0, 1));
-				Shelf[][] shelfArray = new Shelf[4][];
-				for (int i = 0; i < shelfArray.Length; ++i)
+				if (this.GetChildNode("00") == null)
 				{
-					shelfArray[i] = new Shelf[4];
-					for (int j = 0; j < shelfArray[i].Length; ++j)
+					Shelf[][] shelfArray = new Shelf[4][];
+					for (int i = 0; i < shelfArray.Length; ++i)
 					{
-						CGPoint shelfPlace = new CGPoint(40 + 80 * j, 400 - 90 * i);
-						int temp = rand.Next(0, 2);
-						bool left = temp == 0 ? true : false;
-						if (j == 0) { left = true; } else if (j == 3) { left = false; }
-						shelfArray[i][j] = new Shelf(left, shelfPlace);
-						shelfArray[i][j].PhysicsBody = SKPhysicsBody.CreateRectangularBody(shelfArray[i][j].Size);
-						shelfArray[i][j].PhysicsBody.Dynamic = false;
-						shelfArray[i][j].PhysicsBody.Friction = (nfloat)0.1;
-						shelfArray[i][j].PhysicsBody.ContactTestBitMask = 0;
-						shelfArray[i][j].PhysicsBody.CategoryBitMask = 8;
+						shelfArray[i] = new Shelf[4];
+						for (int j = 0; j < shelfArray[i].Length; ++j)
+						{
+							CGPoint shelfPlace = new CGPoint(40 + 80 * j, 400 - 90 * i);
+							int temp = rand.Next(0, 2);
+							bool left = temp == 0 ? true : false;
+							if (j == 0) { left = true; } else if (j == 3) { left = false; }
+							shelfArray[i][j] = new Shelf(left, shelfPlace);
+							shelfArray[i][j].PhysicsBody = SKPhysicsBody.CreateRectangularBody(shelfArray[i][j].Size);
+							shelfArray[i][j].PhysicsBody.Dynamic = false;
+							shelfArray[i][j].PhysicsBody.Friction = (nfloat)0.1;
+							shelfArray[i][j].PhysicsBody.ContactTestBitMask = 0;
+							shelfArray[i][j].PhysicsBody.CategoryBitMask = 8;
 
-						shelfArray[i][j].Name = "" + i + j;
-						this.AddChild(shelfArray[i][j]);
+							shelfArray[i][j].Name = "" + i + j;
+							this.AddChild(shelfArray[i][j]);
+						}
+
 					}
-
+				}
+				else 
+				{
+					for (int i = 0; i < 4; i++)
+					{
+						for (int j = 0; j < 4; j++)
+						{
+							int temp = rand.Next(0, 2);
+							bool left = temp == 0 ? true : false;
+							if (j == 0) { left = true; } else if (j == 3) { left = false; }
+							Shelf sh = this.GetChildNode("" + i + j) as Shelf;
+							sh.isLeft = left;
+							sh.Alpha = 1;
+						}
+					}
+						
 				}
 				timer1.Stop();
 				timer1.Close();
@@ -187,7 +247,7 @@ namespace Basketball
 				{
 					for (int j = 0; j < 4; j++)
 					{
-						this.GetChildNode("" + i + j).RunAction(SKAction.FadeAlphaTo(0, 1));
+						this.GetChildNode("" + i + j).RunAction(SKAction.FadeAlphaTo(0, 0.5));
 					}
 				}
 				rememberLabel1.Text = "Куда попадет мяч?";
@@ -279,8 +339,6 @@ namespace Basketball
 			basket2.PhysicsBody = SKPhysicsBody.Create(basket1.Texture, basket1.Size);
 			basket3.PhysicsBody = SKPhysicsBody.Create(basket1.Texture, basket1.Size);
 			basket4.PhysicsBody = SKPhysicsBody.Create(basket1.Texture, basket1.Size);
-
-
 
 			basket1.PhysicsBody.Dynamic = false;
 			basket2.PhysicsBody.Dynamic = false;
@@ -399,8 +457,17 @@ namespace Basketball
 
 		public void playPressed()
 		{
-			playButton.RemoveFromParent();
-			pauseFog.Hidden = true;
+			if (lives == 0) 
+			{ 
+				lives = 3; 
+				life1.Hidden = false;
+				life2.Hidden = false;
+				life3.Hidden = false;
+
+				level = 1;
+			}
+			playButton.UserInteractionEnabled = false;
+			pauseFog.RunAction(SKAction.FadeAlphaTo(0, 1));
 			nameLabel1.Hidden = true;
 			nameLabel2.Hidden = true;
 			playLabel.Hidden = true;
@@ -409,7 +476,8 @@ namespace Basketball
 			rememberLabel1.RunAction(SKAction.FadeAlphaTo(1, 1));
 			rememberLabel2.Hidden = false;
 			rememberLabel2.RunAction(SKAction.FadeAlphaTo(1, 1));
-
+			levelLabel.Text = "Уровень " + level;
+			levelLabel.RunAction(SKAction.FadeAlphaTo(1, 1));
 			timer1.Start();
 
 		}
@@ -438,9 +506,29 @@ namespace Basketball
 			fall();
 		}
 
+		public void gameOver()
+		{
+			rememberLabel1.Text = "Вы проиграли";
+			highScoreLabel.Text = "Рекорд: " + highScore;
+			yourScoreLabel.Text = "Ваш результат: " + yourScoreLabel;
+			highScoreLabel.Alpha = 0;
+			yourScoreLabel.Alpha = 0;
+
+
+			rememberLabel1.RunAction(SKAction.FadeAlphaTo(1,1));
+			yourScoreLabel.RunAction(SKAction.FadeAlphaTo(1, 1));
+			highScoreLabel.RunAction(SKAction.FadeAlphaTo(1, 1));
+			pauseFog.RunAction(SKAction.FadeAlphaTo(1, 1));
+			playLabel.Text = "Заново";
+			playLabel.Alpha = 0;
+			playLabel.RunAction(SKAction.FadeAlphaTo(1, 1));
+			playButton.UserInteractionEnabled = true;
+		}
+
 		public void fall()
 		{
-
+			rememberLabel1.Hidden = true;
+			rememberLabel1.Text = "У вас есть 5 секунд";
 			basket1.RemoveAllActions();
 			basket2.RemoveAllActions();
 			basket3.RemoveAllActions();
