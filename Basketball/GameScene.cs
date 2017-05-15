@@ -72,6 +72,7 @@ namespace Basketball
 		SKLabelNode rememberLabel2;
 		SKSpriteNode ball;
 
+		bool contactHappened = false;
 		int userChoice;
 		int rightChoice;
 		int lives = 3;
@@ -83,90 +84,108 @@ namespace Basketball
 		public override void DidMoveToView(SKView view)
 		{
 			timer1.Interval = 1000;
-			timer2.Interval = 10000;
+			timer2.Interval = 5000;
 			this.PhysicsWorld.Gravity = new CGVector(0, -5);
 			Random rand = new Random();
 
 			this.PhysicsWorld.DidBeginContact += (object sender, EventArgs e) => 
 			{
-				var contact = sender as SKPhysicsContact;
-				if (contact.BodyA.Node.Name == "ball")
+				if (!contactHappened)
 				{
-					SKSpriteNode ballContact = (SKSpriteNode)contact.BodyA.Node;
-					SKSpriteNode basketContact = (SKSpriteNode)contact.BodyB.Node;
-
-					switch (basketContact.Name)
+					contactHappened = true;
+					var contact = sender as SKPhysicsContact;
+					if (contact.BodyA.Node.Name == "ball")
 					{
-						case "basket1":
-						rightChoice = 1;
-						break;
-						case "basket2":
-						rightChoice = 2;
-						break;
-						case "basket3":
-						rightChoice = 3;
-						break;
-						case "basket4":
-						rightChoice = 4;
-						break;
-					}			
-				}
-				else 
-				{
-					SKSpriteNode ballContact = (SKSpriteNode)contact.BodyB.Node;
-					SKSpriteNode basketContact = (SKSpriteNode)contact.BodyA.Node;	
+						SKSpriteNode ballContact = (SKSpriteNode)contact.BodyA.Node;
+						SKSpriteNode basketContact = (SKSpriteNode)contact.BodyB.Node;
 
-					switch (basketContact.Name)
+						switch (basketContact.Name)
+						{
+							case "basket1":
+								rightChoice = 1;
+								break;
+							case "basket2":
+								rightChoice = 2;
+								break;
+							case "basket3":
+								rightChoice = 3;
+								break;
+							case "basket4":
+								rightChoice = 4;
+								break;
+						}
+					}
+					else
 					{
-						case "basket1":
-						rightChoice = 1;
-						break;
-						case "basket2":
-						rightChoice = 2;
-						break;
-						case "basket3":
-						rightChoice = 3;
-						break;
-						case "basket4":
-						rightChoice = 4;
-						break;
+						SKSpriteNode ballContact = (SKSpriteNode)contact.BodyB.Node;
+						SKSpriteNode basketContact = (SKSpriteNode)contact.BodyA.Node;
+
+						switch (basketContact.Name)
+						{
+							case "basket1":
+								rightChoice = 1;
+								break;
+							case "basket2":
+								rightChoice = 2;
+								break;
+							case "basket3":
+								rightChoice = 3;
+								break;
+							case "basket4":
+								rightChoice = 4;
+								break;
+						}
+					}
+
+					if (rightChoice == userChoice)
+					{
+						level++;
+						if (level > highScore)
+						{
+							highScore = level;
+						}
+						rememberLabel1.Text = "Верно";
+					}
+					else
+					{
+						rememberLabel1.Text = "Неверно";
+						lives--;
+						switch (lives)
+						{
+							case 2:
+								{
+									life1.Hidden = true;
+									break;
+								}
+							case 1:
+								{
+									life2.Hidden = true;
+									break;
+								}
+							case 0:
+								{
+									life3.Hidden = true;
+									gameOver();
+									break;
+								}
+						}
+					}
+
+					rememberLabel1.RunAction(SKAction.Sequence(SKAction.FadeAlphaTo(1, 2), SKAction.FadeAlphaTo(0, 1)));
+					for (int i = 0; i < 4; i++)
+					{
+						for (int j = 0; j < 4; j++)
+						{
+							this.GetChildNode("" + i + j).RunAction(SKAction.FadeAlphaTo(0, 0.5));
+						}
+					}
+
+					if (lives > 0)
+					{
+						rememberLabel1.Text = "У вас есть 5 секунд";
+						playPressed();
 					}
 				}
-
-				if (rightChoice == userChoice)
-				{
-					level++;
-					if (level > highScore) { highScore = level;}
-					rememberLabel1.Text = "Верно";
-				}
-				else 
-				{
-					rememberLabel1.Text = "Неверно";
-					lives--;
-					switch (lives) 
-					{
-						case 2:
-							life1.Hidden = true;
-							break;
-						case 1:
-							life2.Hidden = true;
-							break;
-						case 0:
-							life3.Hidden = true;
-							gameOver();
-							break;
-					}
-				}
-				rememberLabel1.RunAction(SKAction.Sequence(SKAction.FadeAlphaTo(1, 2), SKAction.FadeAlphaTo(0,1)));
-				for (int i = 0; i < 4; i++)
-				{
-					for (int j = 0; j < 4; j++)
-					{
-						this.GetChildNode("" + i + j).RunAction(SKAction.FadeAlphaTo(0, 0.5));
-					}
-				}
-				rememberLabel1.Text = "У вас есть 5 секунд";
-				if (lives > 0) { playPressed();}
 			};
 
 			timer1.Elapsed += (object sender, ElapsedEventArgs e) =>
@@ -240,6 +259,10 @@ namespace Basketball
 				basket2.RunAction(SKAction.RepeatActionForever(rotateBackAndForth));
 				basket3.RunAction(SKAction.RepeatActionForever(rotateBackAndForth));
 				basket4.RunAction(SKAction.RepeatActionForever(rotateBackAndForth));
+				basket1.UserInteractionEnabled = true;
+				basket2.UserInteractionEnabled = true;
+				basket3.UserInteractionEnabled = true;
+				basket4.UserInteractionEnabled = true;
 
 
 				ball.Position = new CGPoint(40 + ballCol * 80, 500);
@@ -298,6 +321,11 @@ namespace Basketball
 			basket2 = makeABasket(basket1, 120);
 			basket3 = makeABasket(basket1, 200);
 			basket4 = makeABasket(basket1, 280);
+
+			basket1.Name = "basket1";
+			basket2.Name = "basket2";
+			basket3.Name = "basket3";
+			basket4.Name = "basket4";
 
 			levelLabel = (SKLabelNode)this.GetChildNode("levelLabel");
 
@@ -364,10 +392,6 @@ namespace Basketball
 			resumeButton.UserInteractionEnabled = true;
 			aboutButton.UserInteractionEnabled = true;
 			settingsButton.UserInteractionEnabled = true;
-			basket1.UserInteractionEnabled = true;
-			basket2.UserInteractionEnabled = true;
-			basket3.UserInteractionEnabled = true;
-			basket4.UserInteractionEnabled = true;
 
 			basket1.PhysicsBody.ContactTestBitMask = 00000001;
 			basket2.PhysicsBody.ContactTestBitMask = 00000001;
@@ -440,6 +464,7 @@ namespace Basketball
 
 		public void playPressed()
 		{
+
 			if (lives == 0) 
 			{ 
 				lives = 3; 
@@ -511,6 +536,13 @@ namespace Basketball
 
 		public void fall()
 		{
+			contactHappened = false;
+
+			basket1.UserInteractionEnabled = false;
+			basket2.UserInteractionEnabled = false;
+			basket3.UserInteractionEnabled = false;
+			basket4.UserInteractionEnabled = false;
+
 			rememberLabel1.Hidden = true;
 
 			basket1.RemoveAllActions();
