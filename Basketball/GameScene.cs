@@ -43,6 +43,7 @@ namespace Basketball
 	{
 		Timer timer1 = new Timer();
 		Timer timer2 = new Timer();
+		Timer timer3 = new Timer();
 		SKSpriteNode life1;
 		SKSpriteNode life2;
 		SKSpriteNode life3;
@@ -144,11 +145,11 @@ namespace Basketball
 						{
 							highScore = level;
 						}
-						rememberLabel1.Text = "Верно";
+						rememberLabel1.Text = "Верно \ud83c\udf1f";
 					}
 					else
 					{
-						rememberLabel1.Text = "Неверно";
+						rememberLabel1.Text = "Неверно \ud83c\udf1a";
 						lives--;
 						switch (lives)
 						{
@@ -182,10 +183,19 @@ namespace Basketball
 
 					if (lives > 0)
 					{
-						rememberLabel1.Text = "У вас есть 5 секунд";
-						playPressed();
+						
+						timer3.Interval = 3000;
+						timer3.Start();
+
 					}
 				}
+			};
+
+			timer3.Elapsed += (object sender, ElapsedEventArgs e) =>
+			{
+				timer3.Stop();
+				timer3.Close();
+				playPressed();
 			};
 
 			timer1.Elapsed += (object sender, ElapsedEventArgs e) =>
@@ -229,7 +239,7 @@ namespace Basketball
 							bool left = temp == 0 ? true : false;
 							if (j == 0) { left = true; } else if (j == 3) { left = false; }
 							Shelf sh = this.GetChildNode("" + i + j) as Shelf;
-							sh.isLeft = left;
+							sh.ZRotation = left ? -10 : 10;
 							sh.Alpha = 1;
 						}
 					}
@@ -464,7 +474,9 @@ namespace Basketball
 
 		public void playPressed()
 		{
-
+			highScoreLabel.Hidden = true;
+			levelLabel.Alpha = 0;
+			levelLabel.Hidden = false;
 			if (lives == 0) 
 			{ 
 				lives = 3; 
@@ -475,7 +487,7 @@ namespace Basketball
 
 				level = 1;
 			}
-
+			rememberLabel1.Text = "У вас есть 5 секунд";
 			playButton.UserInteractionEnabled = false;
 			pauseFog.RunAction(SKAction.FadeAlphaTo(0, 1));
 			nameLabel1.Hidden = true;
@@ -518,11 +530,22 @@ namespace Basketball
 
 		public void gameOver()
 		{
-			rememberLabel1.Text = "Вы проиграли";
-			highScoreLabel.Text = "Рекорд: " + highScore;
-			yourScoreLabel.Text = "Ваш результат: " + yourScoreLabel;
+			rememberLabel1.Text = "Вы проиграли ☹️";
+			if (highScore == level)
+			{
+				rememberLabel1.Hidden = true;
+				highScoreLabel.Text = "НОВЫЙ РЕКОРД \ud83d\udcab: " + highScore;
+			} else 
+			{
+				highScoreLabel.Text = "Рекорд: " + highScore; 
+			}
+
+			yourScoreLabel.Text = "Ваш результат: " + level;
 			highScoreLabel.Alpha = 0;
 			yourScoreLabel.Alpha = 0;
+
+			yourScoreLabel.Hidden = false;
+			highScoreLabel.Hidden = false;
 
 			rememberLabel1.RunAction(SKAction.FadeAlphaTo(1,1));
 			yourScoreLabel.RunAction(SKAction.FadeAlphaTo(1, 1));
@@ -532,6 +555,8 @@ namespace Basketball
 			playLabel.Alpha = 0;
 			playLabel.RunAction(SKAction.FadeAlphaTo(1, 1));
 			playButton.UserInteractionEnabled = true;
+			playLabel.Hidden = false;
+
 		}
 
 		public void fall()
@@ -543,7 +568,7 @@ namespace Basketball
 			basket3.UserInteractionEnabled = false;
 			basket4.UserInteractionEnabled = false;
 
-			rememberLabel1.Hidden = true;
+			rememberLabel1.Alpha = 0;
 
 			basket1.RemoveAllActions();
 			basket2.RemoveAllActions();
