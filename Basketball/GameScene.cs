@@ -8,11 +8,6 @@ using System.Timers;
 
 namespace Basketball
 {
-	enum gameState
-	{
-		welcome, play, pause, tryAgain
-	}
-
 	enum SKButtonNodeState
 	{
 		active, selected, hidden
@@ -30,21 +25,14 @@ namespace Basketball
 			this.Size = FromImageNamed("shelf").Texture.Size;
 			this.ZRotation = isLeft ? -10 : 10;
 		}
-
 	}
 
 	public class SKButtonNode : SKSpriteNode
 	{
 
 		public delegate void buttDel();
-
 		public event buttDel buttPressed;
-		public event buttDel buttTouched;
 
-		public override void TouchesBegan(NSSet touches, UIEvent evt)
-		{
-			// buttTouched();
-		}
 		public override void TouchesEnded(NSSet touches, UIEvent evt)
 		{
 			buttPressed();
@@ -83,23 +71,21 @@ namespace Basketball
 		SKLabelNode rememberLabel1;
 		SKLabelNode rememberLabel2;
 		SKSpriteNode ball;
+
 		int userChoice;
 		int rightChoice;
 		int lives = 3;
 		int level = 1;
 		int highScore = 1;
 
-		gameState thisGame;
 		protected GameScene(IntPtr handle) : base(handle) { }
 
 		public override void DidMoveToView(SKView view)
 		{
-
 			timer1.Interval = 1000;
 			timer2.Interval = 10000;
 			this.PhysicsWorld.Gravity = new CGVector(0, -5);
 			Random rand = new Random();
-
 
 			this.PhysicsWorld.DidBeginContact += (object sender, EventArgs e) => 
 			{
@@ -123,8 +109,7 @@ namespace Basketball
 						case "basket4":
 						rightChoice = 4;
 						break;
-					}
-					
+					}			
 				}
 				else 
 				{
@@ -148,13 +133,11 @@ namespace Basketball
 					}
 				}
 
-				//ball.RunAction(SKAction.Sequence(SKAction.RotateByAngle(10, 1), SKAction.RemoveFromParent()));
 				if (rightChoice == userChoice)
 				{
 					level++;
 					if (level > highScore) { highScore = level;}
-					rememberLabel1.Text = "Верно \ud83c\udf1f";
-
+					rememberLabel1.Text = "Верно";
 				}
 				else 
 				{
@@ -182,11 +165,9 @@ namespace Basketball
 						this.GetChildNode("" + i + j).RunAction(SKAction.FadeAlphaTo(0, 0.5));
 					}
 				}
-
 				rememberLabel1.Text = "У вас есть 5 секунд";
-				playPressed();
+				if (lives > 0) { playPressed();}
 			};
-
 
 			timer1.Elapsed += (object sender, ElapsedEventArgs e) =>
 			{
@@ -273,6 +254,7 @@ namespace Basketball
 				AddChild(ball);
 
 			};
+
 			life1 = (SKSpriteNode)this.GetChildNode("life1");
 			life2 = (SKSpriteNode)this.GetChildNode("life2");
 			life3 = (SKSpriteNode)this.GetChildNode("life3");
@@ -333,8 +315,10 @@ namespace Basketball
 			nameLabel2 = (SKLabelNode)this.GetChildNode("nameLabel2");
 			rememberLabel1 = (SKLabelNode)this.GetChildNode("rememberLabel1");
 			rememberLabel2 = (SKLabelNode)this.GetChildNode("rememberLabel2");
+
 			ball = SKSpriteNode.FromImageNamed("basketball");
 			ball.Name = "ball";
+
 			basket1.PhysicsBody = SKPhysicsBody.Create(basket1.Texture, basket1.Size);
 			basket2.PhysicsBody = SKPhysicsBody.Create(basket1.Texture, basket1.Size);
 			basket3.PhysicsBody = SKPhysicsBody.Create(basket1.Texture, basket1.Size);
@@ -395,10 +379,8 @@ namespace Basketball
 			basket3.PhysicsBody.CategoryBitMask = 2;
 			basket4.PhysicsBody.CategoryBitMask = 2;
 
-
 			playButton.Alpha = (float)0.000001;
 		}
-
 
 		public SKButtonNode makeABasket(SKButtonNode basket, int xCoord)
 		{
@@ -411,6 +393,7 @@ namespace Basketball
 			this.AddChild(basket);
 			return basket;
 		}
+
 		public override void TouchesBegan(NSSet touches, UIEvent evt)
 		{
 			foreach (var touch in touches)
@@ -460,12 +443,14 @@ namespace Basketball
 			if (lives == 0) 
 			{ 
 				lives = 3; 
+
 				life1.Hidden = false;
 				life2.Hidden = false;
 				life3.Hidden = false;
 
 				level = 1;
 			}
+
 			playButton.UserInteractionEnabled = false;
 			pauseFog.RunAction(SKAction.FadeAlphaTo(0, 1));
 			nameLabel1.Hidden = true;
@@ -514,7 +499,6 @@ namespace Basketball
 			highScoreLabel.Alpha = 0;
 			yourScoreLabel.Alpha = 0;
 
-
 			rememberLabel1.RunAction(SKAction.FadeAlphaTo(1,1));
 			yourScoreLabel.RunAction(SKAction.FadeAlphaTo(1, 1));
 			highScoreLabel.RunAction(SKAction.FadeAlphaTo(1, 1));
@@ -528,7 +512,7 @@ namespace Basketball
 		public void fall()
 		{
 			rememberLabel1.Hidden = true;
-			rememberLabel1.Text = "У вас есть 5 секунд";
+
 			basket1.RemoveAllActions();
 			basket2.RemoveAllActions();
 			basket3.RemoveAllActions();
@@ -546,10 +530,8 @@ namespace Basketball
 					this.GetChildNode("" + i + j).RunAction(SKAction.FadeAlphaTo(1, 1));
 				}
 			}
+
 			ball.PhysicsBody.Pinned = false;
-
 		}
-
-
 	}
 }
