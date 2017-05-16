@@ -41,6 +41,7 @@ namespace Basketball
 
 	public class GameScene : SKScene, ISKPhysicsContactDelegate
 	{
+		
 		Timer timer1 = new Timer();
 		Timer timer2 = new Timer();
 		Timer timer3 = new Timer();
@@ -85,6 +86,10 @@ namespace Basketball
 
 		public override void DidMoveToView(SKView view)
 		{
+			if (NSUserDefaults.StandardUserDefaults.IntForKey("hs") != 0) 
+			{ 
+				highScore = (int)NSUserDefaults.StandardUserDefaults.IntForKey("hs");
+			}
 			timer1.Interval = 1000;
 			timer2.Interval = 5000;
 			this.PhysicsWorld.Gravity = new CGVector(0, -5);
@@ -146,6 +151,7 @@ namespace Basketball
 						if (level > highScore)
 						{
 							highScore = level;
+							NSUserDefaults.StandardUserDefaults.SetInt(highScore, "hs");
 						}
 						rememberLabel1.Text = "Верно \ud83c\udf1f";
 					}
