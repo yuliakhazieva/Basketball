@@ -92,6 +92,7 @@ namespace Basketball
 
 			this.PhysicsWorld.DidBeginContact += (object sender, EventArgs e) => 
 			{
+				pauseButton.UserInteractionEnabled = false;
 				if (!contactHappened)
 				{
 					contactHappened = true;
@@ -452,11 +453,13 @@ namespace Basketball
 			} 	else 
 			{
 				ballVelocity = ball.PhysicsBody.Velocity;
-				ball.PhysicsBody.Dynamic = false;
+				if (this.GetChildNode("00").Alpha != 0)
+				{
+					ball.PhysicsBody.Pinned = true;
+				}
 			}
 
 			rememberLabel1.Hidden = true;
-
 			pauseFog.Alpha = (this.GetChildNode("00").Alpha != 0) ? 1 : (nfloat)0.6;
 			pauseFog.Hidden = false;
 			aboutLabel.Hidden = false;
@@ -499,8 +502,10 @@ namespace Basketball
 			else 
 			{ 
 				ball.PhysicsBody.Velocity = ballVelocity;
-				ball.PhysicsBody.Velocity = new CGVector(0,0);
-				ball.PhysicsBody.Dynamic = false;
+				if (this.GetChildNode("00").Alpha != 0)
+				{
+					ball.PhysicsBody.Pinned = false;
+				}
 			}
 
 			pauseFog.RunAction(SKAction.FadeAlphaTo(0,0.5));
@@ -519,6 +524,7 @@ namespace Basketball
 
 		public void playPressed()
 		{
+			pauseButton.UserInteractionEnabled = true;
 			pauseButton.Hidden = false;
 			yourScoreLabel.Hidden = true;
 			highScoreLabel.Hidden = true;
@@ -536,7 +542,7 @@ namespace Basketball
 			}
 			rememberLabel1.Text = "У вас есть 5 секунд";
 			playButton.UserInteractionEnabled = false;
-			pauseFog.RunAction(SKAction.FadeAlphaTo(0, 1));
+			pauseFog.RunAction(SKAction.FadeAlphaTo(0, 0.5));
 			nameLabel1.Hidden = true;
 			nameLabel2.Hidden = true;
 			playLabel.Hidden = true;
