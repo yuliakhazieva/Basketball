@@ -72,6 +72,7 @@ namespace Basketball
 		SKLabelNode rememberLabel1;
 		SKLabelNode rememberLabel2;
 		SKSpriteNode ball;
+		CGVector ballVelocity;
 
 		bool contactHappened = false;
 		int userChoice;
@@ -300,28 +301,27 @@ namespace Basketball
 
 			settingsButton = new SKButtonNode();
 			settingsButton.Texture = SKSpriteNode.FromImageNamed("pause").Texture;
-			settingsButton.Alpha = 0;
+			settingsButton.Alpha = (nfloat)0.000001;
 			settingsButton.Position = new CGPoint(160, 260);
 			settingsButton.Size = new CGSize(320, 58);
 			this.AddChild(settingsButton);
 
 			resumeButton = new SKButtonNode();
 			resumeButton.Texture = SKSpriteNode.FromImageNamed("pause").Texture;
-			resumeButton.Alpha = 0;
+			resumeButton.Alpha = (nfloat)0.000001;
 			resumeButton.Position = new CGPoint(160, 370);
 			resumeButton.Size = new CGSize(320, 57);
 			this.AddChild(resumeButton);
 
 			aboutButton = new SKButtonNode();
 			aboutButton.Texture = SKSpriteNode.FromImageNamed("pause").Texture;
-			aboutButton.Alpha = 0;
+			aboutButton.Alpha = (nfloat)0.000001;
 			aboutButton.Position = new CGPoint(160, 20);
 			aboutButton.Size = new CGSize(323, 46);
 			this.AddChild(aboutButton);
 
 			playButton = new SKButtonNode();
 			playButton.Texture = SKSpriteNode.FromImageNamed("pause").Texture;
-			playButton.Alpha = 0;
 			playButton.Position = new CGPoint(160, 203);
 			playButton.Size = new CGSize(321, 57);
 			this.AddChild(playButton);
@@ -376,6 +376,7 @@ namespace Basketball
 			playButton.buttPressed += playPressed;
 			settingsButton.buttPressed += settingsPressed;
 			aboutButton.buttPressed += aboutPressed;
+			resumeButton.buttPressed += resumePressed;
 			basket1.buttPressed += basket1Pressed;
 			basket2.buttPressed += basket2Pressed;
 			basket3.buttPressed += basket3Pressed;
@@ -443,6 +444,20 @@ namespace Basketball
 
 		public void pausePressed()
 		{
+			pauseButton.UserInteractionEnabled = false;
+			if (rememberLabel1.Text != "Куда попадет мяч?" && rememberLabel1.Text != "Верно \ud83c\udf1f" && rememberLabel1.Text != "Неверно \ud83c\udf1a")
+			{
+				timer1.Stop();
+				timer2.Stop();
+			} 	else 
+			{
+				ballVelocity = ball.PhysicsBody.Velocity;
+				ball.PhysicsBody.Dynamic = false;
+			}
+
+			rememberLabel1.Hidden = true;
+
+			pauseFog.Alpha = (this.GetChildNode("00").Alpha != 0) ? 1 : (nfloat)0.6;
 			pauseFog.Hidden = false;
 			aboutLabel.Hidden = false;
 			aboutLine.Hidden = false;
@@ -453,8 +468,13 @@ namespace Basketball
 			resumeLabel.Hidden = false;
 			resumeLine.Hidden = false;
 			resumeButton.Hidden = false;
-			highScoreLabel.Hidden = false;
-			yourScoreLabel.Hidden = false;
+			resumeButton.ZPosition = 100;
+			resumeLine.RunAction(SKAction.MoveToX(160,0.5));
+			settingsLine.RunAction(SKAction.MoveToX(160,0.5));
+			settingsLabel.RunAction(SKAction.MoveToX(160, 0.5));
+			resumeLabel.RunAction(SKAction.MoveToX(160,0.5));
+			aboutLabel.RunAction(SKAction.MoveToY(15,0.5));
+			aboutLine.RunAction(SKAction.MoveToY(32,0.5));
 		}
 
 		public void settingsPressed()
@@ -469,11 +489,38 @@ namespace Basketball
 
 		public void resumePressed()
 		{
+			pauseButton.UserInteractionEnabled = true;
 
+			if (rememberLabel1.Text != "Куда попадет мяч?" && rememberLabel1.Text != "Верно \ud83c\udf1f" && rememberLabel1.Text != "Неверно \ud83c\udf1a")
+			{
+				timer1.Start();
+				timer2.Start();
+			}
+			else 
+			{ 
+				ball.PhysicsBody.Velocity = ballVelocity;
+				ball.PhysicsBody.Velocity = new CGVector(0,0);
+				ball.PhysicsBody.Dynamic = false;
+			}
+
+			pauseFog.RunAction(SKAction.FadeAlphaTo(0,0.5));
+
+			resumeLine.RunAction(SKAction.MoveToX(480,0.5));
+			settingsLine.RunAction(SKAction.MoveToX(-160,0.5));
+			settingsLabel.RunAction(SKAction.MoveToX(-113, 0.5));
+			aboutLine.RunAction(SKAction.MoveToX(160,0.5));
+			resumeLabel.RunAction(SKAction.MoveToX(467,0.5));
+			aboutLabel.RunAction(SKAction.MoveToY(-25,0.5));
+			aboutLine.RunAction(SKAction.MoveToY(-3,0.5));
+
+			rememberLabel1.Hidden = false;
 		}
+
 
 		public void playPressed()
 		{
+			pauseButton.Hidden = false;
+			yourScoreLabel.Hidden = true;
 			highScoreLabel.Hidden = true;
 			levelLabel.Alpha = 0;
 			levelLabel.Hidden = false;
@@ -550,7 +597,7 @@ namespace Basketball
 			rememberLabel1.RunAction(SKAction.FadeAlphaTo(1,1));
 			yourScoreLabel.RunAction(SKAction.FadeAlphaTo(1, 1));
 			highScoreLabel.RunAction(SKAction.FadeAlphaTo(1, 1));
-			pauseFog.RunAction(SKAction.FadeAlphaTo(1, 1));
+			pauseFog.RunAction(SKAction.FadeAlphaTo((nfloat)0.6, 1));
 			playLabel.Text = "Заново";
 			playLabel.Alpha = 0;
 			playLabel.RunAction(SKAction.FadeAlphaTo(1, 1));

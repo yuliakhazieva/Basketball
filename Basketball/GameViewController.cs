@@ -30,7 +30,7 @@ namespace Basketball
 			// Present the scene.
 			skView.PresentScene(scene);
 
-			skView.ShowsPhysics = true;
+		//	skView.ShowsPhysics = true;
 		}
 
 		public override bool ShouldAutorotate()
