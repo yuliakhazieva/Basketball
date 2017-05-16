@@ -68,12 +68,15 @@ namespace Basketball
 		SKButtonNode basket2;
 		SKButtonNode basket3;
 		SKButtonNode basket4;
+		SKButtonNode backButton;
 		SKLabelNode nameLabel1;
 		SKLabelNode nameLabel2;
 		SKLabelNode rememberLabel1;
 		SKLabelNode rememberLabel2;
 		SKSpriteNode ball;
 		CGVector ballVelocity;
+		SKLabelNode backLabel;
+		SKSpriteNode aboutBackgrnd;
 
 		bool contactHappened = false;
 		int userChoice;
@@ -81,6 +84,7 @@ namespace Basketball
 		int lives = 3;
 		int level = 1;
 		int highScore = 1;
+		bool newHs = false;
 
 		protected GameScene(IntPtr handle) : base(handle) { }
 
@@ -150,6 +154,7 @@ namespace Basketball
 						level++;
 						if (level > highScore)
 						{
+							newHs = true;
 							highScore = level;
 							NSUserDefaults.StandardUserDefaults.SetInt(highScore, "hs");
 						}
@@ -322,10 +327,19 @@ namespace Basketball
 
 			aboutButton = new SKButtonNode();
 			aboutButton.Texture = SKSpriteNode.FromImageNamed("pause").Texture;
-			aboutButton.Alpha = (nfloat)0.000001;
+			aboutButton.Alpha = (nfloat)0.0001;
 			aboutButton.Position = new CGPoint(160, 20);
 			aboutButton.Size = new CGSize(323, 46);
 			this.AddChild(aboutButton);
+			aboutButton.ZPosition = 10;
+
+			backButton = new SKButtonNode();
+			backButton.Texture = SKSpriteNode.FromImageNamed("pause").Texture;
+			backButton.Alpha = (nfloat)0.000001;
+			backButton.Position = new CGPoint(160, 109);
+			backButton.Size = new CGSize(323, 46);
+			this.AddChild(backButton);
+			backButton.ZPosition = 201;
 
 			playButton = new SKButtonNode();
 			playButton.Texture = SKSpriteNode.FromImageNamed("pause").Texture;
@@ -360,6 +374,8 @@ namespace Basketball
 			nameLabel2 = (SKLabelNode)this.GetChildNode("nameLabel2");
 			rememberLabel1 = (SKLabelNode)this.GetChildNode("rememberLabel1");
 			rememberLabel2 = (SKLabelNode)this.GetChildNode("rememberLabel2");
+			backLabel = (SKLabelNode)this.GetChildNode("backLabel");
+			aboutBackgrnd = (SKSpriteNode)this.GetChildNode("aboutBackgrnd");
 
 			ball = SKSpriteNode.FromImageNamed("basketball");
 			ball.Name = "ball";
@@ -388,6 +404,7 @@ namespace Basketball
 			basket2.buttPressed += basket2Pressed;
 			basket3.buttPressed += basket3Pressed;
 			basket4.buttPressed += basket4Pressed;
+			backButton.buttPressed += backPressed;
 
 			pauseButton.Hidden = true;
 			settingsLine.Hidden = true;
@@ -401,6 +418,8 @@ namespace Basketball
 			levelLabel.Hidden = true;
 			rememberLabel1.Hidden = true;
 			rememberLabel2.Hidden = true;
+			backLabel.Hidden = true;
+			aboutBackgrnd.Hidden = true;
 
 			rememberLabel1.Alpha = 0;
 			rememberLabel2.Alpha = 0;
@@ -493,7 +512,16 @@ namespace Basketball
 
 		public void aboutPressed()
 		{
+			backButton.UserInteractionEnabled = true;
+			backLabel.Hidden = false;
+			aboutBackgrnd.Hidden = false;
+		}
 
+		public void backPressed()
+		{
+			aboutBackgrnd.Hidden = true;
+			backLabel.Hidden = true;
+			backButton.UserInteractionEnabled = false;
 		}
 
 		public void resumePressed()
@@ -590,7 +618,7 @@ namespace Basketball
 		public void gameOver()
 		{
 			rememberLabel1.Text = "Вы проиграли ☹️";
-			if (highScore == level)
+			if (newHs)
 			{
 				rememberLabel1.Hidden = true;
 				highScoreLabel.Text = "НОВЫЙ РЕКОРД \ud83d\udcab: " + highScore;
