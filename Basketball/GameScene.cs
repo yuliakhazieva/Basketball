@@ -95,7 +95,7 @@ namespace Basketball
 				highScore = (int)NSUserDefaults.StandardUserDefaults.IntForKey("hs");
 			}
 			timer1.Interval = 1000;
-			timer2.Interval = 5000;
+			timer2.Interval = 10000;
 			this.PhysicsWorld.Gravity = new CGVector(0, -5);
 			Random rand = new Random();
 
@@ -152,6 +152,10 @@ namespace Basketball
 					if (rightChoice == userChoice)
 					{
 						level++;
+						if (timer2.Interval > 5000)
+						{
+							timer2.Interval -= 1000;
+						}
 						if (level > highScore)
 						{
 							newHs = true;
@@ -574,7 +578,7 @@ namespace Basketball
 
 				level = 1;
 			}
-			rememberLabel1.Text = "У вас есть 5 секунд";
+			rememberLabel1.Text = "У вас есть " + timer2.Interval/1000 + " секунд";
 			playButton.UserInteractionEnabled = false;
 			pauseFog.RunAction(SKAction.FadeAlphaTo(0, 0.5));
 			nameLabel1.Hidden = true;
