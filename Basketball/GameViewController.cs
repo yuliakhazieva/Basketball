@@ -18,8 +18,8 @@ namespace Basketball
 
 			// Configure the view.
 			var skView = (SKView)View;
-			skView.ShowsFPS = true;
-			skView.ShowsNodeCount = true;
+		//	skView.ShowsFPS = true;
+		//	skView.ShowsNodeCount = true;
 			/* Sprite Kit applies additional optimizations to improve rendering performance */
 			skView.IgnoresSiblingOrder = true;
 
@@ -30,7 +30,7 @@ namespace Basketball
 			// Present the scene.
 			skView.PresentScene(scene);
 
-		//	skView.ShowsPhysics = true;
+			//skView.ShowsPhysics = true;
 		}
 
 		public override bool ShouldAutorotate()

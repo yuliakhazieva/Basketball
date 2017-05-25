@@ -13,6 +13,7 @@ namespace Basketball
 		active, selected, hidden
 	}
 
+	//Класс полочки
 	public class Shelf : SKSpriteNode
 	{
 		public bool isLeft = false;
@@ -26,7 +27,7 @@ namespace Basketball
 			this.ZRotation = isLeft ? -10 : 10;
 		}
 	}
-
+	//Класс кнопки
 	public class SKButtonNode : SKSpriteNode
 	{
 
@@ -38,13 +39,15 @@ namespace Basketball
 			buttPressed();
 		}
 	}
-
+	//Класс сцены
 	public class GameScene : SKScene, ISKPhysicsContactDelegate
 	{
-		
+		//Таймеры
 		Timer timer1 = new Timer();
 		Timer timer2 = new Timer();
 		Timer timer3 = new Timer();
+
+		//Спрайты
 		SKSpriteNode life1;
 		SKSpriteNode life2;
 		SKSpriteNode life3;
@@ -74,10 +77,19 @@ namespace Basketball
 		SKLabelNode rememberLabel1;
 		SKLabelNode rememberLabel2;
 		SKSpriteNode ball;
-		CGVector ballVelocity;
 		SKLabelNode backLabel;
 		SKSpriteNode aboutBackgrnd;
+		SKAudioNode timerSound;
+		SKButtonNode basShader1;
+		SKButtonNode basShader2;
+		SKButtonNode basShader3;
+		SKButtonNode basShader4;
+		SKButtonNode soundOnButton;
+		SKSpriteNode settingsBackgrnd;
+		SKSpriteNode soundsIndicator;
 
+		//Прочие переменные
+		CGVector ballVelocity;
 		bool contactHappened = false;
 		int userChoice;
 		int rightChoice;
@@ -85,11 +97,18 @@ namespace Basketball
 		int level = 1;
 		int highScore = 1;
 		bool newHs = false;
+		bool soundOn = true;
 
 		protected GameScene(IntPtr handle) : base(handle) { }
 
+		//Метод вызывается при появлении приложения на экране
 		public override void DidMoveToView(SKView view)
 		{
+			
+
+			timerSound = new SKAudioNode("timer");
+			timerSound.Name = "timerSound";
+			//Если есть рекорд, то берем его значение
 			if (NSUserDefaults.StandardUserDefaults.IntForKey("hs") != 0) 
 			{ 
 				highScore = (int)NSUserDefaults.StandardUserDefaults.IntForKey("hs");
@@ -99,18 +118,22 @@ namespace Basketball
 			this.PhysicsWorld.Gravity = new CGVector(0, -5);
 			Random rand = new Random();
 
+			//Лямбда-выражение, вызывающееся при контакте физических тел с соответствующими масками
 			this.PhysicsWorld.DidBeginContact += (object sender, EventArgs e) => 
 			{
 				pauseButton.UserInteractionEnabled = false;
+				//Убеждаемся, что не реагируем на тот же самый контакт дважды
 				if (!contactHappened)
 				{
 					contactHappened = true;
 					var contact = sender as SKPhysicsContact;
+					//Когда происходит контакт между телами, мы должны учесть, что тело А и тело Б могут меняться от случая к случаю
 					if (contact.BodyA.Node.Name == "ball")
 					{
 						SKSpriteNode ballContact = (SKSpriteNode)contact.BodyA.Node;
 						SKSpriteNode basketContact = (SKSpriteNode)contact.BodyB.Node;
 
+						//Запоминаем правильный ответ
 						switch (basketContact.Name)
 						{
 							case "basket1":
@@ -148,7 +171,7 @@ namespace Basketball
 								break;
 						}
 					}
-
+					//Действия, если пользователь угадал
 					if (rightChoice == userChoice)
 					{
 						level++;
@@ -163,9 +186,18 @@ namespace Basketball
 							NSUserDefaults.StandardUserDefaults.SetInt(highScore, "hs");
 						}
 						rememberLabel1.Text = "Верно \ud83c\udf1f";
+						if (soundOn)
+						{
+							RunAction(SKAction.PlaySoundFileNamed("cheers", false));
+						}
 					}
+					//Действия, если пользователь не угадал
 					else
 					{
+						if (soundOn)
+						{
+							RunAction(SKAction.PlaySoundFileNamed("whistle", false));
+						}
 						rememberLabel1.Text = "Неверно \ud83c\udf1a";
 						lives--;
 						switch (lives)
@@ -190,6 +222,7 @@ namespace Basketball
 					}
 
 					rememberLabel1.RunAction(SKAction.Sequence(SKAction.FadeAlphaTo(1, 2), SKAction.FadeAlphaTo(0, 1)));
+					//Прячем полочки
 					for (int i = 0; i < 4; i++)
 					{
 						for (int j = 0; j < 4; j++)
@@ -207,7 +240,7 @@ namespace Basketball
 					}
 				}
 			};
-
+			//Таймер отсрачивающий новый цикл геймплея
 			timer3.Elapsed += (object sender, ElapsedEventArgs e) =>
 			{
 				timer3.Stop();
@@ -215,12 +248,17 @@ namespace Basketball
 				playPressed();
 			};
 
+			//Таймер отсрачивающий начало геймплея
 			timer1.Elapsed += (object sender, ElapsedEventArgs e) =>
 			{
-
+				if (soundOn )
+				{
+					this.AddChild(timerSound);
+				}
 				levelLabel.RunAction(SKAction.FadeAlphaTo(0, 1));
 				rememberLabel1.RunAction(SKAction.FadeAlphaTo(0, 1));
 				rememberLabel2.RunAction(SKAction.FadeAlphaTo(0, 1));
+				//Если это первая игра, то генерируем полочки
 				if (this.GetChildNode("00") == null)
 				{
 					Shelf[][] shelfArray = new Shelf[4][];
@@ -246,6 +284,7 @@ namespace Basketball
 
 					}
 				}
+				//Иначе просто случайно их наклоняем
 				else 
 				{
 					for (int i = 0; i < 4; i++)
@@ -266,10 +305,18 @@ namespace Basketball
 				timer1.Close();
 				timer2.Start();
 			};
+
+			//Таймер исчезновения полочек
 			timer2.Elapsed += (object sender, ElapsedEventArgs e) =>
 			{
+				if (soundOn )
+				{
+					timerSound.RemoveFromParent();
+				}
 				timer2.Stop();
 				timer2.Close();
+
+				//Прячем полочки
 				for (int i = 0; i < 4; i++)
 				{
 					for (int j = 0; j < 4; j++)
@@ -286,12 +333,12 @@ namespace Basketball
 				basket2.RunAction(SKAction.RepeatActionForever(rotateBackAndForth));
 				basket3.RunAction(SKAction.RepeatActionForever(rotateBackAndForth));
 				basket4.RunAction(SKAction.RepeatActionForever(rotateBackAndForth));
-				basket1.UserInteractionEnabled = true;
-				basket2.UserInteractionEnabled = true;
-				basket3.UserInteractionEnabled = true;
-				basket4.UserInteractionEnabled = true;
+				basShader1.UserInteractionEnabled = true;
+				basShader2.UserInteractionEnabled = true;
+				basShader3.UserInteractionEnabled = true;
+				basShader4.UserInteractionEnabled = true;
 
-
+				//Ставим мяч на случайную позицию
 				ball.Position = new CGPoint(40 + ballCol * 80, 500);
 				ball.PhysicsBody = SKPhysicsBody.CreateCircularBody(5);
 				ball.PhysicsBody.ContactTestBitMask = 2;
@@ -309,6 +356,7 @@ namespace Basketball
 			life2 = (SKSpriteNode)this.GetChildNode("life2");
 			life3 = (SKSpriteNode)this.GetChildNode("life3");
 
+			//Создаем кнопки
 			pauseButton = new SKButtonNode();
 			pauseButton.Texture = SKSpriteNode.FromImageNamed("pause").Texture;
 			pauseButton.Size = SKSpriteNode.FromImageNamed("pause").Size;
@@ -317,10 +365,19 @@ namespace Basketball
 
 			settingsButton = new SKButtonNode();
 			settingsButton.Texture = SKSpriteNode.FromImageNamed("pause").Texture;
-			settingsButton.Alpha = (nfloat)0.000001;
+			settingsButton.Alpha = (nfloat)0.00001;
 			settingsButton.Position = new CGPoint(160, 260);
 			settingsButton.Size = new CGSize(320, 58);
+			settingsButton.ZPosition = 15;
 			this.AddChild(settingsButton);
+
+			soundOnButton = new SKButtonNode();
+			soundOnButton.Texture = SKSpriteNode.FromImageNamed("ball").Texture;
+			soundOnButton.Alpha = (nfloat)0.00001;
+			soundOnButton.Position = new CGPoint(-18, -26);
+			soundOnButton.Size = new CGSize(25,41);
+			soundOnButton.ZPosition = 202;
+
 
 			resumeButton = new SKButtonNode();
 			resumeButton.Texture = SKSpriteNode.FromImageNamed("pause").Texture;
@@ -352,18 +409,24 @@ namespace Basketball
 			this.AddChild(playButton);
 			playButton.ZPosition = 20;
 
+			//Создаем корзинки
 			basket1 = makeABasket(basket1, 40);
 			basket2 = makeABasket(basket1, 120);
 			basket3 = makeABasket(basket1, 200);
 			basket4 = makeABasket(basket1, 280);
+
+			basShader1 = makeAShader(basShader1, basket1.Position);
+			basShader2 = makeAShader(basShader1, basket2.Position);
+			basShader3 = makeAShader(basShader1, basket3.Position);
+			basShader4 = makeAShader(basShader1, basket4.Position);
 
 			basket1.Name = "basket1";
 			basket2.Name = "basket2";
 			basket3.Name = "basket3";
 			basket4.Name = "basket4";
 
+			//Соединяем переменные со спрайтами на сцене
 			levelLabel = (SKLabelNode)this.GetChildNode("levelLabel");
-
 			pauseFog = (SKSpriteNode)this.GetChildNode("pauseFog");
 			aboutLabel = (SKLabelNode)this.GetChildNode("aboutLabel");
 			aboutLine = (SKSpriteNode)this.GetChildNode("aboutLine");
@@ -380,9 +443,12 @@ namespace Basketball
 			rememberLabel2 = (SKLabelNode)this.GetChildNode("rememberLabel2");
 			backLabel = (SKLabelNode)this.GetChildNode("backLabel");
 			aboutBackgrnd = (SKSpriteNode)this.GetChildNode("aboutBackgrnd");
+			settingsBackgrnd = (SKSpriteNode)this.GetChildNode("settingsBackgrnd");
+			soundsIndicator = (SKSpriteNode)settingsBackgrnd.GetChildNode("soundsIndicator");
 
 			ball = SKSpriteNode.FromImageNamed("basketball");
 			ball.Name = "ball";
+			settingsBackgrnd.AddChild(soundOnButton);
 
 			basket1.PhysicsBody = SKPhysicsBody.Create(basket1.Texture, basket1.Size);
 			basket2.PhysicsBody = SKPhysicsBody.Create(basket1.Texture, basket1.Size);
@@ -399,16 +465,20 @@ namespace Basketball
 			basket3.PhysicsBody.CollisionBitMask = 00000000;
 			basket4.PhysicsBody.CollisionBitMask = 00000000;
 
+			//Подписываем методы на события нажатий кнопок
 			pauseButton.buttPressed += pausePressed;
 			playButton.buttPressed += playPressed;
 			settingsButton.buttPressed += settingsPressed;
 			aboutButton.buttPressed += aboutPressed;
 			resumeButton.buttPressed += resumePressed;
-			basket1.buttPressed += basket1Pressed;
-			basket2.buttPressed += basket2Pressed;
-			basket3.buttPressed += basket3Pressed;
-			basket4.buttPressed += basket4Pressed;
+
 			backButton.buttPressed += backPressed;
+			basShader1.buttPressed += shader1Pressed;
+			basShader2.buttPressed += shader2Pressed;
+			basShader3.buttPressed += shader3Pressed;
+			basShader4.buttPressed += shader4Pressed;
+
+			soundOnButton.buttPressed += soundPressed;
 
 			pauseButton.Hidden = true;
 			settingsLine.Hidden = true;
@@ -424,16 +494,18 @@ namespace Basketball
 			rememberLabel2.Hidden = true;
 			backLabel.Hidden = true;
 			aboutBackgrnd.Hidden = true;
+			settingsBackgrnd.Hidden = true;
 
 			rememberLabel1.Alpha = 0;
 			rememberLabel2.Alpha = 0;
 
 			playButton.UserInteractionEnabled = true;
 			pauseButton.UserInteractionEnabled = true;
-			resumeButton.UserInteractionEnabled = true;
-			aboutButton.UserInteractionEnabled = true;
+
+
 			settingsButton.UserInteractionEnabled = true;
 
+			//Логика того, что будет оповещать нас о случившемся контакте
 			basket1.PhysicsBody.ContactTestBitMask = 00000001;
 			basket2.PhysicsBody.ContactTestBitMask = 00000001;
 			basket3.PhysicsBody.ContactTestBitMask = 00000001;
@@ -447,6 +519,7 @@ namespace Basketball
 			playButton.Alpha = (float)0.000001;
 		}
 
+		//Метод для задания корзинок
 		public SKButtonNode makeABasket(SKButtonNode basket, int xCoord)
 		{
 			basket = new SKButtonNode();
@@ -459,21 +532,52 @@ namespace Basketball
 			return basket;
 		}
 
-		public override void TouchesBegan(NSSet touches, UIEvent evt)
+		public void soundPressed()
 		{
-			foreach (var touch in touches)
+			if (soundOn)
 			{
-
+				soundOn = false;
+				soundsIndicator.RunAction(SKAction.MoveToX(-18, 0.2));
+				soundOnButton.Position = new CGPoint(21,-26);
+			}
+			else
+			{
+				soundOn = true;
+				soundsIndicator.RunAction(SKAction.MoveToX(21, 0.2));
+				soundOnButton.Position = new CGPoint(-18,-26);
 			}
 		}
 
-		public override void Update(double currentTime)
+		public SKButtonNode makeAShader(SKButtonNode shader, CGPoint position)
 		{
-
+			shader = new SKButtonNode();
+			shader.Color = UIColor.Red;
+			shader.Size = basket1.Size;
+			shader.Alpha = (nfloat)0.00001;
+			shader.Position = position;
+			shader.ZPosition = 50;
+			this.AddChild(shader);
+			shader.UserInteractionEnabled = true;
+			return shader;
 		}
 
+
+		//Нажали паузу
 		public void pausePressed()
 		{
+			levelLabel.Hidden = true;
+			basShader1.UserInteractionEnabled = false;
+			basShader2.UserInteractionEnabled = false;
+			basShader3.UserInteractionEnabled = false;
+			basShader4.UserInteractionEnabled = false;
+
+			if (soundOn )
+			{
+				timerSound.RemoveFromParent();
+			}
+			resumeButton.UserInteractionEnabled = true;
+			aboutButton.UserInteractionEnabled = true;
+			settingsButton.UserInteractionEnabled = true;
 			pauseButton.UserInteractionEnabled = false;
 			if (rememberLabel1.Text != "Куда попадет мяч?" && rememberLabel1.Text != "Верно \ud83c\udf1f" && rememberLabel1.Text != "Неверно \ud83c\udf1a")
 			{
@@ -481,15 +585,17 @@ namespace Basketball
 				timer2.Stop();
 			} 	else 
 			{
+				//Запоминаем с какой скоростью летел мяч
 				ballVelocity = ball.PhysicsBody.Velocity;
 				if (this.GetChildNode("00").Alpha != 0)
 				{
 					ball.PhysicsBody.Pinned = true;
 				}
 			}
-
+			//Прячем лишние спрайты
+			rememberLabel2.Hidden = true;
 			rememberLabel1.Hidden = true;
-			pauseFog.Alpha = (this.GetChildNode("00").Alpha != 0) ? 1 : (nfloat)0.6;
+			pauseFog.Alpha = 1;
 			pauseFog.Hidden = false;
 			aboutLabel.Hidden = false;
 			aboutLine.Hidden = false;
@@ -509,11 +615,22 @@ namespace Basketball
 			aboutLine.RunAction(SKAction.MoveToY(32,0.5));
 		}
 
+		//Когда-нибудь тут будут настройки
 		public void settingsPressed()
 		{
-
+			
+			resumeLine.Hidden = true;
+			resumeLabel.Hidden = true;
+			aboutLine.Hidden = true;
+			aboutLabel.Hidden = true;
+			resumeButton.UserInteractionEnabled = false;
+			backButton.UserInteractionEnabled = true;
+			backLabel.Hidden = false;
+			settingsBackgrnd.Hidden = false;
+			soundOnButton.UserInteractionEnabled = true;
 		}
 
+		//Кнопка о программе
 		public void aboutPressed()
 		{
 			backButton.UserInteractionEnabled = true;
@@ -521,21 +638,45 @@ namespace Basketball
 			aboutBackgrnd.Hidden = false;
 		}
 
+		//Кнопка назад
 		public void backPressed()
 		{
+
+			resumeLine.Hidden = false;
+			resumeLabel.Hidden = false;
+			aboutLine.Hidden = false;
+			aboutLabel.Hidden = false;
 			aboutBackgrnd.Hidden = true;
+			settingsBackgrnd.Hidden = true;
 			backLabel.Hidden = true;
 			backButton.UserInteractionEnabled = false;
+			soundOnButton.UserInteractionEnabled = false;
+			resumeButton.UserInteractionEnabled = true;
 		}
 
+		//Кнопка продолжить
 		public void resumePressed()
 		{
+			if (rememberLabel1.Text == "Куда попадет мяч?")
+			{
+				basShader1.UserInteractionEnabled = true;
+				basShader2.UserInteractionEnabled = true;
+				basShader3.UserInteractionEnabled = true;
+				basShader4.UserInteractionEnabled = true;
+			}
+
+			settingsButton.UserInteractionEnabled = false;
+			rememberLabel2.Hidden = false;
+			resumeButton.UserInteractionEnabled = false;
+			aboutButton.UserInteractionEnabled = false;
 			pauseButton.UserInteractionEnabled = true;
 
+			//Заново генерируем полочки чтобы пользователи не брали паузой доп время на запоминание
 			if (rememberLabel1.Text != "Куда попадет мяч?" && rememberLabel1.Text != "Верно \ud83c\udf1f" && rememberLabel1.Text != "Неверно \ud83c\udf1a")
 			{
 				timer1.Start();
-				timer2.Start();
+				//timer2.Start();
+
 			}
 			else 
 			{ 
@@ -547,7 +688,6 @@ namespace Basketball
 			}
 
 			pauseFog.RunAction(SKAction.FadeAlphaTo(0,0.5));
-
 			resumeLine.RunAction(SKAction.MoveToX(480,0.5));
 			settingsLine.RunAction(SKAction.MoveToX(-160,0.5));
 			settingsLabel.RunAction(SKAction.MoveToX(-113, 0.5));
@@ -559,7 +699,7 @@ namespace Basketball
 			rememberLabel1.Hidden = false;
 		}
 
-
+		//Начало цикла игры
 		public void playPressed()
 		{
 			pauseButton.UserInteractionEnabled = true;
@@ -568,6 +708,7 @@ namespace Basketball
 			highScoreLabel.Hidden = true;
 			levelLabel.Alpha = 0;
 			levelLabel.Hidden = false;
+			//Если до этого пользователь проиграл и хочет начать сначала
 			if (lives == 0) 
 			{ 
 				lives = 3; 
@@ -577,6 +718,7 @@ namespace Basketball
 				life3.Hidden = false;
 
 				level = 1;
+				timer2.Interval = 10000;
 			}
 			rememberLabel1.Text = "У вас есть " + timer2.Interval/1000 + " секунд";
 			playButton.UserInteractionEnabled = false;
@@ -595,30 +737,30 @@ namespace Basketball
 
 		}
 
-		public void basket1Pressed()
+		//Реакция на нажатие корзинок
+		public void shader1Pressed()
 		{
 			userChoice = 1;
 			fall();
 		}
-
-		public void basket2Pressed()
+        public void shader2Pressed()
 		{
 			userChoice = 2;
 			fall();
 		}
-
-		public void basket3Pressed()
+	    public void shader3Pressed()
 		{
 			userChoice = 3;
 			fall();
 		}
-
-		public void basket4Pressed()
+	    public void shader4Pressed()
 		{
 			userChoice = 4;
 			fall();
 		}
 
+
+		//Проигрыш
 		public void gameOver()
 		{
 			rememberLabel1.Text = "Вы проиграли ☹️";
@@ -650,14 +792,15 @@ namespace Basketball
 
 		}
 
+		//Падение мяча
 		public void fall()
 		{
 			contactHappened = false;
 
-			basket1.UserInteractionEnabled = false;
-			basket2.UserInteractionEnabled = false;
-			basket3.UserInteractionEnabled = false;
-			basket4.UserInteractionEnabled = false;
+			basShader1.UserInteractionEnabled = false;
+			basShader2.UserInteractionEnabled = false;
+			basShader3.UserInteractionEnabled = false;
+			basShader4.UserInteractionEnabled = false;
 
 			rememberLabel1.Alpha = 0;
 
@@ -670,6 +813,7 @@ namespace Basketball
 			basket2.ZRotation = 0;
 			basket3.ZRotation = 0;
 			basket4.ZRotation = 0;
+
 
 			for (int i = 0; i < 4; i++)
 			{
